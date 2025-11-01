@@ -1,0 +1,82 @@
+service: nestjs-template
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: ap-northeast-2
+  stage: ${opt:stage, 'dev'}
+  memorySize: 256
+  timeout: 30
+
+  environment:
+    DATABASE_URL: ${env:DATABASE_URL}
+    NODE_ENV: ${opt:stage, 'dev'}
+
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+        - X-Api-Key
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        - OPTIONS
+      allowCredentials: true
+      maxAge: 86400
+
+# package:
+#   exclude:
+#     # - node_modules/**
+#     - .serverless/**
+#     - .webpack/**
+#     - test/**
+#     - README.md
+#     - .env*
+#     - node_modules/@prisma/engines/**
+#     - node_modules/.prisma/**
+
+functions:
+  app:
+    handler: dist/lambda.handler
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: any
+
+plugins:
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 25000
+    noPrependStageInUrl: true
+    useChildProcesses: true
+    allowCache: true
+    lambdaRuntime: nodejs22.x
+    printOutput: true
+    showDuration: true
+    verbose: true
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    target: node22
+    external:
+      - express
+      - cache-manager
+      - '@nestjs/websockets'
+      - '@nestjs/microservices'
+      - class-transformer
+      - class-validator
+      - reflect-metadata
+      - rxjs
+      - '@nestjs/platform-express'
+      - '@nestjs/schedule'
+    exclude:
+      - aws-sdk

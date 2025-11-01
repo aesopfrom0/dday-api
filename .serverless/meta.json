@@ -1,0 +1,166 @@
+{
+  "/Users/aesop/new-nestjs-template/serverless.yml": {
+    "versionFramework": "4.10.1",
+    "servicePath": "/Users/aesop/new-nestjs-template/serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "nestjs-template",
+      "provider": {
+        "name": "aws",
+        "runtime": "nodejs22.x",
+        "region": "ap-northeast-2",
+        "stage": "dev",
+        "memorySize": 256,
+        "timeout": 30,
+        "environment": {
+          "DATABASE_URL": "postgresql://graba_owner:npg_JizLnF9VXQ8m@ep-billowing-sun-a16nhtce-pooler.ap-southeast-1.aws.neon.tech/graba?sslmode=require",
+          "NODE_ENV": "dev"
+        },
+        "httpApi": {
+          "cors": {
+            "allowedOrigins": [
+              "*"
+            ],
+            "allowedHeaders": [
+              "Content-Type",
+              "Authorization",
+              "X-Api-Key"
+            ],
+            "allowedMethods": [
+              "GET",
+              "POST",
+              "PUT",
+              "DELETE",
+              "PATCH",
+              "OPTIONS"
+            ],
+            "allowCredentials": "<REDACTED>",
+            "maxAge": 86400
+          }
+        },
+        "versionFunctions": true
+      },
+      "package": {
+        "exclude": [
+          ".git/**",
+          "test/**",
+          "prisma/migrations/**",
+          "README.md",
+          ".env*",
+          "node_modules/@prisma/engines/**",
+          "node_modules/.prisma/**"
+        ]
+      },
+      "functions": {
+        "app": {
+          "handler": "dist/lambda.handler",
+          "events": [
+            {
+              "httpApi": {
+                "path": "/{proxy+}",
+                "method": "any"
+              }
+            }
+          ]
+        }
+      },
+      "plugins": [
+        "serverless-offline",
+        "serverless-esbuild"
+      ],
+      "custom": {
+        "serverless-offline": {
+          "httpPort": 9001,
+          "noPrependStageInUrl": true
+        },
+        "build": {
+          "esbuild": {
+            "bundle": true,
+            "minify": false,
+            "sourcemap": true,
+            "target": "node22",
+            "external": [
+              "express",
+              "cache-manager",
+              "@nestjs/websockets",
+              "@nestjs/microservices",
+              "class-transformer",
+              "class-validator",
+              "reflect-metadata",
+              "rxjs",
+              "@nestjs/platform-express",
+              "@nestjs/schedule"
+            ]
+          },
+          "exclude": [
+            "aws-sdk"
+          ]
+        }
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs22.x",
+      "region": "ap-northeast-2",
+      "stage": "dev",
+      "memorySize": 256,
+      "timeout": 30,
+      "environment": {
+        "DATABASE_URL": "postgresql://graba_owner:npg_JizLnF9VXQ8m@ep-billowing-sun-a16nhtce-pooler.ap-southeast-1.aws.neon.tech/graba?sslmode=require",
+        "NODE_ENV": "dev"
+      },
+      "httpApi": {
+        "cors": {
+          "allowedOrigins": [
+            "*"
+          ],
+          "allowedHeaders": [
+            "Content-Type",
+            "Authorization",
+            "X-Api-Key"
+          ],
+          "allowedMethods": [
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "PATCH",
+            "OPTIONS"
+          ],
+          "allowCredentials": "<REDACTED>",
+          "maxAge": 86400
+        }
+      },
+      "versionFunctions": true
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "error": {
+      "message": "Serverless now includes ESBuild and supports Typescript out-of-the-box. But this conflicts with the plugin 'serverless-esbuild'.\nYou can either remove this plugin and try Serverless's ESBuild support builtin, or you can set 'build.esbuild' to false in your 'serverless.yml'.\nFor more information go to, https://slss.io/buildoptions",
+      "stack": "ServerlessError2: Serverless now includes ESBuild and supports Typescript out-of-the-box. But this conflicts with the plugin 'serverless-esbuild'.\nYou can either remove this plugin and try Serverless's ESBuild support builtin, or you can set 'build.esbuild' to false in your 'serverless.yml'.\nFor more information go to, https://slss.io/buildoptions\n    at PluginManager.addPlugin (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:775:65)\n    at file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:775:1434\n    at Array.forEach (<anonymous>)\n    at PluginManager.loadAllPlugins (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:775:1412)\n    at async Serverless.init (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:782:9840)\n    at async runFramework (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:809:837)\n    at async TraditionalRunner.run (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:805:28308)\n    at async route (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:843:2779)\n    at async Object.run (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:844:3661)\n    at async run2 (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:844:4814)",
+      "code": "PLUGIN_TYPESCRIPT_CONFLICT"
+    },
+    "serviceRawFile": "service: nestjs-template\n\nprovider:\n  name: aws\n  runtime: nodejs22.x\n  region: ap-northeast-2\n  stage: ${opt:stage, 'dev'}\n  memorySize: 256\n  timeout: 30\n\n  environment:\n    DATABASE_URL: ${env:DATABASE_URL}\n    NODE_ENV: ${opt:stage, 'dev'}\n\n  httpApi:\n    cors:\n      allowedOrigins:\n        - '*'\n      allowedHeaders:\n        - Content-Type\n        - Authorization\n        - X-Api-Key\n      allowedMethods:\n        - GET\n        - POST\n        - PUT\n        - DELETE\n        - PATCH\n        - OPTIONS\n      allowCredentials: true\n      maxAge: 86400\n\npackage:\n  exclude:\n    - .git/**\n    - test/**\n    - prisma/migrations/**\n    - README.md\n    - .env*\n    - node_modules/@prisma/engines/**\n    - node_modules/.prisma/**\n\nfunctions:\n  app:\n    handler: dist/lambda.handler\n    events:\n      - httpApi:\n          path: /{proxy+}\n          method: any\n\nplugins:\n  - serverless-offline\n  - serverless-esbuild\n\ncustom:\n  serverless-offline:\n    httpPort: 9001\n    noPrependStageInUrl: true\n  build:\n    esbuild:\n      bundle: true\n      minify: false\n      sourcemap: true\n      target: node22\n      external:\n        - express\n        - cache-manager\n        - '@nestjs/websockets'\n        - '@nestjs/microservices'\n        - class-transformer\n        - class-validator\n        - reflect-metadata\n        - rxjs\n        - '@nestjs/platform-express'\n        - '@nestjs/schedule'\n    exclude:\n      - aws-sdk\n",
+    "command": [
+      "offline"
+    ],
+    "options": {},
+    "orgId": "ab051dd3-9ce5-44f8-8dbd-39c31285f7b9",
+    "orgName": "grabalab",
+    "userId": "0XldcN8WyKH4x42vCR",
+    "userName": "grabalab",
+    "serviceProviderAwsAccountId": "308066567345",
+    "serviceProviderAwsCfStackId": null,
+    "serviceProviderAwsCfStackCreated": null,
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": null,
+    "serviceProviderAwsCfStackOutputs": null
+  }
+}
