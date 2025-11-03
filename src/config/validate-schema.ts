@@ -12,10 +12,10 @@ export function validateSchema() {
     ALLOWED_CORS_ORIGIN: Joi.string(),
     MONGODB_URI: Joi.string().required(),
     JWT_SECRET: Joi.string().required(),
-    GOOGLE_CLIENT_ID: Joi.string().optional(),
-    GOOGLE_CLIENT_SECRET: Joi.string().optional(),
-    GOOGLE_CALLBACK_URL: Joi.string().optional(),
-    APPLE_CLIENT_ID: Joi.string().optional(),
-    APPLE_CLIENT_SECRET: Joi.string().optional(),
+    GOOGLE_CLIENT_ID: Joi.string().allow('').optional(),
+    GOOGLE_CLIENT_SECRET: Joi.string().allow('').optional(),
+    GOOGLE_CALLBACK_URL: Joi.string().allow('').optional(),
+    APPLE_CLIENT_ID: Joi.string().allow('').optional(),
+    APPLE_CLIENT_SECRET: Joi.string().allow('').optional(),
   });
 }

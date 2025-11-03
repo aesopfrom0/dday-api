@@ -33,7 +33,10 @@ export class UsersService {
     return newUser.save();
   }
 
-  async updateSettings(userId: string, updateSettingsDto: UpdateSettingsDto): Promise<UserDocument> {
+  async updateSettings(
+    userId: string,
+    updateSettingsDto: UpdateSettingsDto,
+  ): Promise<UserDocument> {
     const user = await this.userModel
       .findByIdAndUpdate(
         userId,

@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Occasion, OccasionDocument } from './schemas/occasion.schema';
@@ -38,7 +43,10 @@ export class OccasionsService {
   }
 
   async findAll(userId: string): Promise<OccasionDocument[]> {
-    return this.occasionModel.find({ userId: new Types.ObjectId(userId) }).sort({ baseDate: -1 }).exec();
+    return this.occasionModel
+      .find({ userId: new Types.ObjectId(userId) })
+      .sort({ baseDate: -1 })
+      .exec();
   }
 
   async findOne(userId: string, occasionId: string): Promise<OccasionDocument> {
@@ -55,7 +63,11 @@ export class OccasionsService {
     return occasion;
   }
 
-  async update(userId: string, occasionId: string, updateOccasionDto: UpdateOccasionDto): Promise<OccasionDocument> {
+  async update(
+    userId: string,
+    occasionId: string,
+    updateOccasionDto: UpdateOccasionDto,
+  ): Promise<OccasionDocument> {
     const occasion = await this.findOne(userId, occasionId);
 
     Object.assign(occasion, updateOccasionDto);
@@ -67,13 +79,19 @@ export class OccasionsService {
     await occasion.deleteOne();
   }
 
-  async addCustomMilestone(userId: string, occasionId: string, milestone: { name: string; targetDate: Date }) {
+  async addCustomMilestone(
+    userId: string,
+    occasionId: string,
+    milestone: { name: string; targetDate: Date },
+  ) {
     const occasion = await this.findOne(userId, occasionId);
     const user = await this.usersService.findById(userId);
 
     // 프리미엄이 아니면 3개까지만
     if (!user.subscription.isPremium && occasion.customMilestones.length >= 3) {
-      throw new BadRequestException('Free users can only add up to 3 custom milestones. Upgrade to premium for unlimited.');
+      throw new BadRequestException(
+        'Free users can only add up to 3 custom milestones. Upgrade to premium for unlimited.',
+      );
     }
 
     occasion.customMilestones.push(milestone);
@@ -94,37 +112,165 @@ export class OccasionsService {
   private getDefaultSettingsByCategory(category: string) {
     const defaults = {
       couple: {
-        displayUnits: { year: false, month: false, week: false, day: true, hour: false, minute: false, second: false },
-        displayOptions: { showElapsed: true, showUpcoming: true, showMilestones: true, milestoneCount: 3 as const, showProgress: true },
-        recurringRules: { yearly: true, monthly: true, weekly: false, every100days: true, every1000days: false },
+        displayUnits: {
+          year: false,
+          month: false,
+          week: false,
+          day: true,
+          hour: false,
+          minute: false,
+          second: false,
+        },
+        displayOptions: {
+          showElapsed: true,
+          showUpcoming: true,
+          showMilestones: true,
+          milestoneCount: 3 as const,
+          showProgress: true,
+        },
+        recurringRules: {
+          yearly: true,
+          monthly: true,
+          weekly: false,
+          every100days: true,
+          every1000days: false,
+        },
       },
       marriage: {
-        displayUnits: { year: false, month: false, week: false, day: true, hour: false, minute: false, second: false },
-        displayOptions: { showElapsed: true, showUpcoming: true, showMilestones: true, milestoneCount: 3 as const, showProgress: true },
-        recurringRules: { yearly: true, monthly: true, weekly: false, every100days: true, every1000days: false },
+        displayUnits: {
+          year: false,
+          month: false,
+          week: false,
+          day: true,
+          hour: false,
+          minute: false,
+          second: false,
+        },
+        displayOptions: {
+          showElapsed: true,
+          showUpcoming: true,
+          showMilestones: true,
+          milestoneCount: 3 as const,
+          showProgress: true,
+        },
+        recurringRules: {
+          yearly: true,
+          monthly: true,
+          weekly: false,
+          every100days: true,
+          every1000days: false,
+        },
       },
       baby: {
-        displayUnits: { year: false, month: false, week: false, day: true, hour: false, minute: false, second: false },
-        displayOptions: { showElapsed: true, showUpcoming: true, showMilestones: true, milestoneCount: 3 as const, showProgress: true },
-        recurringRules: { yearly: true, monthly: true, weekly: false, every100days: true, every1000days: false },
+        displayUnits: {
+          year: false,
+          month: false,
+          week: false,
+          day: true,
+          hour: false,
+          minute: false,
+          second: false,
+        },
+        displayOptions: {
+          showElapsed: true,
+          showUpcoming: true,
+          showMilestones: true,
+          milestoneCount: 3 as const,
+          showProgress: true,
+        },
+        recurringRules: {
+          yearly: true,
+          monthly: true,
+          weekly: false,
+          every100days: true,
+          every1000days: false,
+        },
       },
       birthday: {
-        displayUnits: { year: false, month: false, week: false, day: true, hour: false, minute: false, second: false },
-        displayOptions: { showElapsed: true, showUpcoming: true, showMilestones: true, milestoneCount: 1 as const, showProgress: true },
-        recurringRules: { yearly: true, monthly: false, weekly: false, every100days: false, every1000days: false },
+        displayUnits: {
+          year: false,
+          month: false,
+          week: false,
+          day: true,
+          hour: false,
+          minute: false,
+          second: false,
+        },
+        displayOptions: {
+          showElapsed: true,
+          showUpcoming: true,
+          showMilestones: true,
+          milestoneCount: 1 as const,
+          showProgress: true,
+        },
+        recurringRules: {
+          yearly: true,
+          monthly: false,
+          weekly: false,
+          every100days: false,
+          every1000days: false,
+        },
       },
       military: {
-        displayUnits: { year: false, month: false, week: false, day: true, hour: false, minute: false, second: false },
-        displayOptions: { showElapsed: false, showUpcoming: true, showMilestones: false, milestoneCount: 1 as const, showProgress: true },
-        recurringRules: { yearly: false, monthly: false, weekly: false, every100days: false, every1000days: false },
+        displayUnits: {
+          year: false,
+          month: false,
+          week: false,
+          day: true,
+          hour: false,
+          minute: false,
+          second: false,
+        },
+        displayOptions: {
+          showElapsed: false,
+          showUpcoming: true,
+          showMilestones: false,
+          milestoneCount: 1 as const,
+          showProgress: true,
+        },
+        recurringRules: {
+          yearly: false,
+          monthly: false,
+          weekly: false,
+          every100days: false,
+          every1000days: false,
+        },
       },
       quit_smoking: {
-        displayUnits: { year: false, month: false, week: false, day: true, hour: false, minute: false, second: false },
-        displayOptions: { showElapsed: true, showUpcoming: true, showMilestones: true, milestoneCount: 3 as const, showProgress: true },
-        recurringRules: { yearly: false, monthly: false, weekly: false, every100days: true, every1000days: false },
+        displayUnits: {
+          year: false,
+          month: false,
+          week: false,
+          day: true,
+          hour: false,
+          minute: false,
+          second: false,
+        },
+        displayOptions: {
+          showElapsed: true,
+          showUpcoming: true,
+          showMilestones: true,
+          milestoneCount: 3 as const,
+          showProgress: true,
+        },
+        recurringRules: {
+          yearly: false,
+          monthly: false,
+          weekly: false,
+          every100days: true,
+          every1000days: false,
+        },
       },
       memorial: {
-        displayUnits: { year: false, month: false, week: false, day: true, hour: false, minute: false, second: false },
+        displayUnits: {
+          year: false,
+          month: false,
+          week: false,
+          day: true,
+          hour: false,
+          minute: false,
+          second: false,
+        },
         displayOptions: {
           showElapsed: true,
           showUpcoming: true,
@@ -132,20 +278,66 @@ export class OccasionsService {
           milestoneCount: 'default' as const,
           showProgress: false,
         },
-        recurringRules: { yearly: true, monthly: false, weekly: false, every100days: false, every1000days: false },
+        recurringRules: {
+          yearly: true,
+          monthly: false,
+          weekly: false,
+          every100days: false,
+          every1000days: false,
+        },
       },
       payday: {
-        displayUnits: { year: false, month: false, week: false, day: true, hour: false, minute: false, second: false },
-        displayOptions: { showElapsed: false, showUpcoming: true, showMilestones: false, milestoneCount: 1 as const, showProgress: true },
-        recurringRules: { yearly: false, monthly: true, weekly: false, every100days: false, every1000days: false },
+        displayUnits: {
+          year: false,
+          month: false,
+          week: false,
+          day: true,
+          hour: false,
+          minute: false,
+          second: false,
+        },
+        displayOptions: {
+          showElapsed: false,
+          showUpcoming: true,
+          showMilestones: false,
+          milestoneCount: 1 as const,
+          showProgress: true,
+        },
+        recurringRules: {
+          yearly: false,
+          monthly: true,
+          weekly: false,
+          every100days: false,
+          every1000days: false,
+        },
       },
     };
 
     return (
       defaults[category] || {
-        displayUnits: { year: false, month: false, week: false, day: true, hour: false, minute: false, second: false },
-        displayOptions: { showElapsed: true, showUpcoming: true, showMilestones: true, milestoneCount: 'default' as const, showProgress: true },
-        recurringRules: { yearly: false, monthly: false, weekly: false, every100days: false, every1000days: false },
+        displayUnits: {
+          year: false,
+          month: false,
+          week: false,
+          day: true,
+          hour: false,
+          minute: false,
+          second: false,
+        },
+        displayOptions: {
+          showElapsed: true,
+          showUpcoming: true,
+          showMilestones: true,
+          milestoneCount: 'default' as const,
+          showProgress: true,
+        },
+        recurringRules: {
+          yearly: false,
+          monthly: false,
+          weekly: false,
+          every100days: false,
+          every1000days: false,
+        },
       }
     );
   }

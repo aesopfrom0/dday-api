@@ -111,7 +111,7 @@ export class AuthService {
   async devLogin(devLoginDto: DevLoginDto): Promise<UserDocument> {
     const nodeEnv = this.configService.get<string>('NODE_ENV');
 
-    if (nodeEnv !== 'development') {
+    if (nodeEnv !== 'development' && nodeEnv !== 'local') {
       throw new UnauthorizedException('Dev login only available in development mode');
     }
 

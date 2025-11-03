@@ -6,7 +6,10 @@ import { Occasion, OccasionSchema } from './schemas/occasion.schema';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Occasion.name, schema: OccasionSchema }]), UsersModule],
+  imports: [
+    MongooseModule.forFeature([{ name: Occasion.name, schema: OccasionSchema }]),
+    UsersModule,
+  ],
   controllers: [OccasionsController],
   providers: [OccasionsService],
   exports: [OccasionsService],

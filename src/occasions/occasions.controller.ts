@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { OccasionsService } from './occasions.service';
 import { CreateOccasionDto } from './dto/create-occasion.dto';
 import { UpdateOccasionDto } from './dto/update-occasion.dto';
@@ -25,7 +35,11 @@ export class OccasionsController {
   }
 
   @Patch(':id')
-  async update(@Request() req, @Param('id') id: string, @Body() updateOccasionDto: UpdateOccasionDto) {
+  async update(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() updateOccasionDto: UpdateOccasionDto,
+  ) {
     return this.occasionsService.update(req.user.userId, id, updateOccasionDto);
   }
 
@@ -36,12 +50,20 @@ export class OccasionsController {
   }
 
   @Post(':id/milestones')
-  async addCustomMilestone(@Request() req, @Param('id') id: string, @Body() milestone: { name: string; targetDate: Date }) {
+  async addCustomMilestone(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() milestone: { name: string; targetDate: Date },
+  ) {
     return this.occasionsService.addCustomMilestone(req.user.userId, id, milestone);
   }
 
   @Delete(':id/milestones/:index')
-  async removeCustomMilestone(@Request() req, @Param('id') id: string, @Param('index') index: string) {
+  async removeCustomMilestone(
+    @Request() req,
+    @Param('id') id: string,
+    @Param('index') index: string,
+  ) {
     return this.occasionsService.removeCustomMilestone(req.user.userId, id, parseInt(index));
   }
 }
