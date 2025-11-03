@@ -5,6 +5,9 @@ import { ConfigModule } from '@nestjs/config';
 import configuration from 'src/config/configuration';
 import { validateSchema } from 'src/config/validate-schema';
 import { DatabaseModule } from './provider/database/database.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { OccasionsModule } from './occasions/occasions.module';
 
 @Module({
   imports: [
@@ -15,8 +18,12 @@ import { DatabaseModule } from './provider/database/database.module';
       validationOptions: {
         abortEarly: true,
       },
+      isGlobal: true, // ConfigModule을 전역으로 사용
     }),
     DatabaseModule,
+    AuthModule,
+    UsersModule,
+    OccasionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
