@@ -5,7 +5,6 @@ import { ConfigModule } from '@nestjs/config';
 import configuration from 'src/config/configuration';
 import { validateSchema } from 'src/config/validate-schema';
 import { DatabaseModule } from './provider/database/database.module';
-import { HelloModule } from './domain/hello/hello.module';
 
 @Module({
   imports: [
@@ -18,7 +17,6 @@ import { HelloModule } from './domain/hello/hello.module';
       },
     }),
     DatabaseModule,
-    HelloModule,
   ],
   controllers: [AppController],
   providers: [AppService],
