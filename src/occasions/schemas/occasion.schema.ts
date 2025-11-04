@@ -50,6 +50,9 @@ export class Occasion {
     | 'memorial'
     | 'travel';
 
+  @Prop({ required: true, default: true })
+  isNotificationEnabled: boolean;
+
   @Prop({
     type: {
       year: { type: Boolean, default: false },
@@ -82,26 +85,17 @@ export class Occasion {
 
   @Prop({
     type: {
-      showElapsed: { type: Boolean, default: true },
-      showUpcoming: { type: Boolean, default: true },
-      showMilestones: { type: Boolean, default: true },
-      milestoneCount: { type: String, enum: ['default', 1, 2, 3, 'all'], default: 'default' },
       showProgress: { type: Boolean, default: true },
+      showCumulativeDuration: { type: Boolean, default: true },
     },
     default: {
-      showElapsed: true,
-      showUpcoming: true,
-      showMilestones: true,
-      milestoneCount: 'default',
       showProgress: true,
+      showCumulativeDuration: true,
     },
   })
   displayOptions: {
-    showElapsed: boolean;
-    showUpcoming: boolean;
-    showMilestones: boolean;
-    milestoneCount: 'default' | 1 | 2 | 3 | 'all';
     showProgress: boolean;
+    showCumulativeDuration: boolean;
   };
 
   @Prop({
@@ -120,7 +114,7 @@ export class Occasion {
       every1000days: false,
     },
   })
-  recurringRules: {
+  milestoneRules: {
     yearly: boolean;
     monthly: boolean;
     weekly: boolean;
@@ -141,6 +135,9 @@ export class Occasion {
     name: string;
     targetDate: Date;
   }>;
+
+  @Prop({ type: [String], default: [] })
+  excludedMilestones: string[];
 }
 
 export const OccasionSchema = SchemaFactory.createForClass(Occasion);

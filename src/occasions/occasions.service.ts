@@ -33,20 +33,23 @@ export class OccasionsService {
         ...defaultSettings.displayOptions,
         ...createOccasionDto.displayOptions,
       },
-      recurringRules: {
-        ...defaultSettings.recurringRules,
-        ...createOccasionDto.recurringRules,
+      milestoneRules: {
+        ...defaultSettings.milestoneRules,
+        ...createOccasionDto.milestoneRules,
       },
     });
 
     return occasion.save();
   }
 
-  async findAll(userId: string): Promise<OccasionDocument[]> {
-    return this.occasionModel
-      .find({ userId: new Types.ObjectId(userId) })
-      .sort({ baseDate: -1 })
-      .exec();
+  async findAll(userId: string, category?: string): Promise<OccasionDocument[]> {
+    const query: any = { userId: new Types.ObjectId(userId) };
+
+    if (category) {
+      query.category = category;
+    }
+
+    return this.occasionModel.find(query).sort({ baseDate: -1 }).exec();
   }
 
   async findOne(userId: string, occasionId: string): Promise<OccasionDocument> {
@@ -122,13 +125,10 @@ export class OccasionsService {
           second: false,
         },
         displayOptions: {
-          showElapsed: true,
-          showUpcoming: true,
-          showMilestones: true,
-          milestoneCount: 3 as const,
           showProgress: true,
+          showCumulativeDuration: true,
         },
-        recurringRules: {
+        milestoneRules: {
           yearly: true,
           monthly: true,
           weekly: false,
@@ -147,13 +147,10 @@ export class OccasionsService {
           second: false,
         },
         displayOptions: {
-          showElapsed: true,
-          showUpcoming: true,
-          showMilestones: true,
-          milestoneCount: 3 as const,
           showProgress: true,
+          showCumulativeDuration: true,
         },
-        recurringRules: {
+        milestoneRules: {
           yearly: true,
           monthly: true,
           weekly: false,
@@ -172,13 +169,10 @@ export class OccasionsService {
           second: false,
         },
         displayOptions: {
-          showElapsed: true,
-          showUpcoming: true,
-          showMilestones: true,
-          milestoneCount: 3 as const,
           showProgress: true,
+          showCumulativeDuration: true,
         },
-        recurringRules: {
+        milestoneRules: {
           yearly: true,
           monthly: true,
           weekly: false,
@@ -197,13 +191,10 @@ export class OccasionsService {
           second: false,
         },
         displayOptions: {
-          showElapsed: true,
-          showUpcoming: true,
-          showMilestones: true,
-          milestoneCount: 1 as const,
           showProgress: true,
+          showCumulativeDuration: true,
         },
-        recurringRules: {
+        milestoneRules: {
           yearly: true,
           monthly: false,
           weekly: false,
@@ -222,13 +213,10 @@ export class OccasionsService {
           second: false,
         },
         displayOptions: {
-          showElapsed: false,
-          showUpcoming: true,
-          showMilestones: false,
-          milestoneCount: 1 as const,
           showProgress: true,
+          showCumulativeDuration: false,
         },
-        recurringRules: {
+        milestoneRules: {
           yearly: false,
           monthly: false,
           weekly: false,
@@ -247,13 +235,10 @@ export class OccasionsService {
           second: false,
         },
         displayOptions: {
-          showElapsed: true,
-          showUpcoming: true,
-          showMilestones: true,
-          milestoneCount: 3 as const,
           showProgress: true,
+          showCumulativeDuration: true,
         },
-        recurringRules: {
+        milestoneRules: {
           yearly: false,
           monthly: false,
           weekly: false,
@@ -272,13 +257,10 @@ export class OccasionsService {
           second: false,
         },
         displayOptions: {
-          showElapsed: true,
-          showUpcoming: true,
-          showMilestones: false,
-          milestoneCount: 'default' as const,
           showProgress: false,
+          showCumulativeDuration: true,
         },
-        recurringRules: {
+        milestoneRules: {
           yearly: true,
           monthly: false,
           weekly: false,
@@ -297,13 +279,10 @@ export class OccasionsService {
           second: false,
         },
         displayOptions: {
-          showElapsed: false,
-          showUpcoming: true,
-          showMilestones: false,
-          milestoneCount: 1 as const,
           showProgress: true,
+          showCumulativeDuration: false,
         },
-        recurringRules: {
+        milestoneRules: {
           yearly: false,
           monthly: true,
           weekly: false,
@@ -325,13 +304,10 @@ export class OccasionsService {
           second: false,
         },
         displayOptions: {
-          showElapsed: true,
-          showUpcoming: true,
-          showMilestones: true,
-          milestoneCount: 'default' as const,
           showProgress: true,
+          showCumulativeDuration: true,
         },
-        recurringRules: {
+        milestoneRules: {
           yearly: false,
           monthly: false,
           weekly: false,

@@ -2,10 +2,12 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Patch,
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -25,8 +27,8 @@ export class OccasionsController {
   }
 
   @Get()
-  async findAll(@Request() req) {
-    return this.occasionsService.findAll(req.user.userId);
+  async findAll(@Request() req, @Query('category') category?: string) {
+    return this.occasionsService.findAll(req.user.userId, category);
   }
 
   @Get(':id')
@@ -34,8 +36,17 @@ export class OccasionsController {
     return this.occasionsService.findOne(req.user.userId, id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   async update(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() updateOccasionDto: UpdateOccasionDto,
+  ) {
+    return this.occasionsService.update(req.user.userId, id, updateOccasionDto);
+  }
+
+  @Patch(':id')
+  async patch(
     @Request() req,
     @Param('id') id: string,
     @Body() updateOccasionDto: UpdateOccasionDto,

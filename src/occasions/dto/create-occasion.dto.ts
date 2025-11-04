@@ -43,26 +43,14 @@ class DisplayUnitsDto {
 class DisplayOptionsDto {
   @IsOptional()
   @IsBoolean()
-  showElapsed?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  showUpcoming?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  showMilestones?: boolean;
-
-  @IsOptional()
-  @IsEnum(['default', 1, 2, 3, 'all'])
-  milestoneCount?: 'default' | 1 | 2 | 3 | 'all';
-
-  @IsOptional()
-  @IsBoolean()
   showProgress?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  showCumulativeDuration?: boolean;
 }
 
-class RecurringRulesDto {
+class MilestoneRulesDto {
   @IsOptional()
   @IsBoolean()
   yearly?: boolean;
@@ -132,14 +120,23 @@ export class CreateOccasionDto {
   displayOptions?: DisplayOptionsDto;
 
   @IsOptional()
+  @IsBoolean()
+  isNotificationEnabled?: boolean;
+
+  @IsOptional()
   @IsObject()
   @ValidateNested()
-  @Type(() => RecurringRulesDto)
-  recurringRules?: RecurringRulesDto;
+  @Type(() => MilestoneRulesDto)
+  milestoneRules?: MilestoneRulesDto;
 
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CustomMilestoneDto)
   customMilestones?: CustomMilestoneDto[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  excludedMilestones?: string[];
 }
