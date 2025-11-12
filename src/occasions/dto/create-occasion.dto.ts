@@ -84,6 +84,9 @@ export class CreateOccasionDto {
   @IsString()
   name: string;
 
+  // "YYYY-MM-DD" 형식 (ISO 8601 날짜 전용)
+  // 예: "2025-08-15"
+  @IsString()
   @IsDateString()
   baseDate: string;
 

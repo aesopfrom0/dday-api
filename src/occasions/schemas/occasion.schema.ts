@@ -11,8 +11,11 @@ export class Occasion {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true, type: Date })
-  baseDate: Date;
+  // 날짜만 저장 (시간대 문제 방지)
+  // 형식: "YYYY-MM-DD" (예: "2025-08-15")
+  // 절대적 날짜: 모든 시간대에서 같은 날짜로 표시
+  @Prop({ required: true, type: String })
+  baseDate: string;
 
   @Prop({ required: true, enum: ['solar', 'lunar'], default: 'solar' })
   calendarType: 'solar' | 'lunar';
