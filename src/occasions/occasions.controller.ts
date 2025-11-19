@@ -9,31 +9,51 @@ import {
   Param,
   Query,
   UseGuards,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { OccasionsService } from './occasions.service';
 import { CreateOccasionDto } from './dto/create-occasion.dto';
 import { UpdateOccasionDto } from './dto/update-occasion.dto';
+import { OccasionResponseDto } from './dto/occasion-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser, CurrentUserData } from '../auth/decorators/current-user.decorator';
+import { plainToInstance } from 'class-transformer';
 
 @Controller('occasions')
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(ClassSerializerInterceptor)
 export class OccasionsController {
   constructor(private readonly occasionsService: OccasionsService) {}
 
+  private toResponseDto(occasion: any): OccasionResponseDto {
+    return plainToInstance(
+      OccasionResponseDto,
+      {
+        ...occasion.toJSON(),
+        id: occasion._id.toString(),
+        userId: occasion.userId.toString(),
+      },
+      { excludeExtraneousValues: true },
+    );
+  }
+
   @Post()
   async create(@CurrentUser() user: CurrentUserData, @Body() createOccasionDto: CreateOccasionDto) {
-    return this.occasionsService.create(user.userId, createOccasionDto);
+    const occasion = await this.occasionsService.create(user.userId, createOccasionDto);
+    return this.toResponseDto(occasion);
   }
 
   @Get()
   async findAll(@CurrentUser() user: CurrentUserData, @Query('category') category?: string) {
-    return this.occasionsService.findAll(user.userId, category);
+    const occasions = await this.occasionsService.findAll(user.userId, category);
+    return occasions.map((o) => this.toResponseDto(o));
   }
 
   @Get(':id')
   async findOne(@CurrentUser() user: CurrentUserData, @Param('id') id: string) {
-    return this.occasionsService.findOne(user.userId, id);
+    const occasion = await this.occasionsService.findOne(user.userId, id);
+    return this.toResponseDto(occasion);
   }
 
   @Put(':id')
@@ -42,7 +62,8 @@ export class OccasionsController {
     @Param('id') id: string,
     @Body() updateOccasionDto: UpdateOccasionDto,
   ) {
-    return this.occasionsService.update(user.userId, id, updateOccasionDto);
+    const occasion = await this.occasionsService.update(user.userId, id, updateOccasionDto);
+    return this.toResponseDto(occasion);
   }
 
   @Patch(':id')
@@ -51,7 +72,8 @@ export class OccasionsController {
     @Param('id') id: string,
     @Body() updateOccasionDto: UpdateOccasionDto,
   ) {
-    return this.occasionsService.update(user.userId, id, updateOccasionDto);
+    const occasion = await this.occasionsService.update(user.userId, id, updateOccasionDto);
+    return this.toResponseDto(occasion);
   }
 
   @Delete(':id')

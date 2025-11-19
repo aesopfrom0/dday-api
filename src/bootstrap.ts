@@ -6,7 +6,6 @@ import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
-import { MongoIdTransformInterceptor } from './common/interceptors/mongo-id-transform.interceptor';
 
 export interface AppOptions {
   expressApp?: express.Express;
@@ -26,9 +25,6 @@ export async function createApp(options: AppOptions = {}): Promise<INestApplicat
       transform: true,
     }),
   );
-
-  // MongoDB _id -> id 변환 인터셉터
-  app.useGlobalInterceptors(new MongoIdTransformInterceptor());
 
   // CORS 설정
   app.enableCors();

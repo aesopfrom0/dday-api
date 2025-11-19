@@ -6,7 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Occasion, OccasionDocument } from './schemas/occasion.schema';
 import { CreateOccasionDto } from './dto/create-occasion.dto';
 import { UpdateOccasionDto } from './dto/update-occasion.dto';
@@ -31,7 +31,7 @@ export class OccasionsService {
 
     const occasion = new this.occasionModel({
       ...createOccasionDto,
-      userId, // Mongoose가 자동으로 ObjectId로 변환
+      userId,
       displayUnits: {
         ...defaultSettings.displayUnits,
         ...createOccasionDto.displayUnits,
@@ -57,7 +57,7 @@ export class OccasionsService {
       `[${this.findAll.name}] 기념일 목록 조회 - userId: ${userId}, category: ${category || 'all'}`,
     );
 
-    const query: any = { userId }; // Mongoose가 자동으로 ObjectId로 변환
+    const query: any = { userId: new Types.ObjectId(userId) };
 
     if (category) {
       query.category = category;
