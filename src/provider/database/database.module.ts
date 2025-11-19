@@ -8,7 +8,7 @@ import { DatabaseService } from 'src/provider/database/database.service';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI'),
+        uri: configService.get<string>('database.uri'),
       }),
       inject: [ConfigService],
     }),

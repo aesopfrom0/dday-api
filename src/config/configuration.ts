@@ -6,4 +6,7 @@ export default () => ({
     port: +process.env.PORT,
     allowedCorsOrigins: process.env.ALLOWED_CORS_ORIGIN?.split(',') || [],
   },
+  database: {
+    uri: process.env.MONGODB_URI,
+  },
 });
