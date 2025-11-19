@@ -31,7 +31,7 @@ class DisplayOptionsResponseDto {
   showCumulativeDuration: boolean;
 }
 
-class MilestoneRulesResponseDto {
+class SuggestionRulesResponseDto {
   @Expose()
   yearly: boolean;
 
@@ -48,12 +48,27 @@ class MilestoneRulesResponseDto {
   every1000days: boolean;
 }
 
-class CustomMilestoneResponseDto {
+class MilestoneResponseDto {
+  @Expose()
+  id: string;
+
   @Expose()
   name: string;
 
   @Expose()
   targetDate: Date;
+
+  @Expose()
+  description?: string;
+
+  @Expose()
+  isFromSuggestion: boolean;
+
+  @Expose()
+  suggestionType?: string;
+
+  @Expose()
+  suggestionValue?: number;
 }
 
 export class OccasionResponseDto {
@@ -87,12 +102,12 @@ export class OccasionResponseDto {
   displayOptions: DisplayOptionsResponseDto;
 
   @Expose()
-  @Type(() => MilestoneRulesResponseDto)
-  milestoneRules: MilestoneRulesResponseDto;
+  @Type(() => SuggestionRulesResponseDto)
+  suggestionRules: SuggestionRulesResponseDto;
 
   @Expose()
-  @Type(() => CustomMilestoneResponseDto)
-  customMilestones: CustomMilestoneResponseDto[];
+  @Type(() => MilestoneResponseDto)
+  milestones: MilestoneResponseDto[];
 
   @Expose()
   excludedMilestones: string[];

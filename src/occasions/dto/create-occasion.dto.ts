@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsBoolean,
   IsArray,
+  IsNumber,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -50,7 +51,7 @@ class DisplayOptionsDto {
   showCumulativeDuration?: boolean;
 }
 
-class MilestoneRulesDto {
+class SuggestionRulesDto {
   @IsOptional()
   @IsBoolean()
   yearly?: boolean;
@@ -72,12 +73,31 @@ class MilestoneRulesDto {
   every1000days?: boolean;
 }
 
-class CustomMilestoneDto {
+class MilestoneDto {
+  @IsString()
+  id: string;
+
   @IsString()
   name: string;
 
   @IsDateString()
   targetDate: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isFromSuggestion?: boolean;
+
+  @IsOptional()
+  @IsString()
+  suggestionType?: string;
+
+  @IsOptional()
+  @IsNumber()
+  suggestionValue?: number;
 }
 
 export class CreateOccasionDto {
@@ -129,14 +149,14 @@ export class CreateOccasionDto {
   @IsOptional()
   @IsObject()
   @ValidateNested()
-  @Type(() => MilestoneRulesDto)
-  milestoneRules?: MilestoneRulesDto;
+  @Type(() => SuggestionRulesDto)
+  suggestionRules?: SuggestionRulesDto;
 
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CustomMilestoneDto)
-  customMilestones?: CustomMilestoneDto[];
+  @Type(() => MilestoneDto)
+  milestones?: MilestoneDto[];
 
   @IsOptional()
   @IsArray()

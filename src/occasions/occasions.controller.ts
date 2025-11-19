@@ -83,20 +83,29 @@ export class OccasionsController {
   }
 
   @Post(':id/milestones')
-  async addCustomMilestone(
+  async addMilestone(
     @CurrentUser() user: CurrentUserData,
     @Param('id') id: string,
-    @Body() milestone: { name: string; targetDate: Date },
+    @Body()
+    milestone: {
+      id: string;
+      name: string;
+      targetDate: Date;
+      description?: string;
+      isFromSuggestion?: boolean;
+      suggestionType?: string;
+      suggestionValue?: number;
+    },
   ) {
-    return this.occasionsService.addCustomMilestone(user.userId, id, milestone);
+    return this.occasionsService.addMilestone(user.userId, id, milestone);
   }
 
-  @Delete(':id/milestones/:index')
-  async removeCustomMilestone(
+  @Delete(':id/milestones/:milestoneId')
+  async removeMilestone(
     @CurrentUser() user: CurrentUserData,
     @Param('id') id: string,
-    @Param('index') index: string,
+    @Param('milestoneId') milestoneId: string,
   ) {
-    return this.occasionsService.removeCustomMilestone(user.userId, id, parseInt(index));
+    return this.occasionsService.removeMilestone(user.userId, id, milestoneId);
   }
 }

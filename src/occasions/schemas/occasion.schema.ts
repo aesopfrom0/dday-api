@@ -124,7 +124,7 @@ export class Occasion {
       every1000days: false,
     },
   })
-  milestoneRules: {
+  suggestionRules: {
     yearly: boolean;
     monthly: boolean;
     weekly: boolean;
@@ -135,15 +135,25 @@ export class Occasion {
   @Prop({
     type: [
       {
+        id: { type: String, required: true },
         name: { type: String, required: true },
         targetDate: { type: Date, required: true },
+        description: { type: String },
+        isFromSuggestion: { type: Boolean, default: false },
+        suggestionType: { type: String },
+        suggestionValue: { type: Number },
       },
     ],
     default: [],
   })
-  customMilestones: Array<{
+  milestones: Array<{
+    id: string;
     name: string;
     targetDate: Date;
+    description?: string;
+    isFromSuggestion?: boolean;
+    suggestionType?: string;
+    suggestionValue?: number;
   }>;
 
   @Prop({ type: [String], default: [] })

@@ -31,7 +31,7 @@ export class OccasionsService {
 
     const occasion = new this.occasionModel({
       ...createOccasionDto,
-      userId,
+      userId: new Types.ObjectId(userId),
       displayUnits: {
         ...defaultSettings.displayUnits,
         ...createOccasionDto.displayUnits,
@@ -40,9 +40,9 @@ export class OccasionsService {
         ...defaultSettings.displayOptions,
         ...createOccasionDto.displayOptions,
       },
-      milestoneRules: {
-        ...defaultSettings.milestoneRules,
-        ...createOccasionDto.milestoneRules,
+      suggestionRules: {
+        ...defaultSettings.suggestionRules,
+        ...createOccasionDto.suggestionRules,
       },
     });
 
@@ -138,13 +138,21 @@ export class OccasionsService {
     this.logger.log(`[${this.remove.name}] 기념일 삭제 완료 - occasionId: ${occasionId}`);
   }
 
-  async addCustomMilestone(
+  async addMilestone(
     userId: string,
     occasionId: string,
-    milestone: { name: string; targetDate: Date },
+    milestone: {
+      id: string;
+      name: string;
+      targetDate: Date;
+      description?: string;
+      isFromSuggestion?: boolean;
+      suggestionType?: string;
+      suggestionValue?: number;
+    },
   ): Promise<OccasionDocument> {
     this.logger.log(
-      `[${this.addCustomMilestone.name}] 커스텀 마일스톤 추가 시작 - userId: ${userId}, occasionId: ${occasionId}, milestoneName: ${milestone.name}`,
+      `[${this.addMilestone.name}] 마일스톤 추가 시작 - userId: ${userId}, occasionId: ${occasionId}, milestoneName: ${milestone.name}`,
     );
 
     const occasion = await this.occasionModel.findById(occasionId).exec();
@@ -160,31 +168,31 @@ export class OccasionsService {
     const user = await this.usersService.findById(userId);
 
     // 프리미엄이 아니면 3개까지만
-    if (!user.subscription.isPremium && occasion.customMilestones.length >= 3) {
+    if (!user.subscription.isPremium && occasion.milestones.length >= 3) {
       this.logger.warn(
-        `[${this.addCustomMilestone.name}] 무료 사용자 마일스톤 제한 초과 - userId: ${userId}, current: ${occasion.customMilestones.length}`,
+        `[${this.addMilestone.name}] 무료 사용자 마일스톤 제한 초과 - userId: ${userId}, current: ${occasion.milestones.length}`,
       );
       throw new BadRequestException(
-        'Free users can only add up to 3 custom milestones. Upgrade to premium for unlimited.',
+        'Free users can only add up to 3 milestones. Upgrade to premium for unlimited.',
       );
     }
 
-    occasion.customMilestones.push(milestone);
+    occasion.milestones.push(milestone);
     const saved = await occasion.save();
 
     this.logger.log(
-      `[${this.addCustomMilestone.name}] 커스텀 마일스톤 추가 완료 - occasionId: ${occasionId}, 총 ${saved.customMilestones.length}개`,
+      `[${this.addMilestone.name}] 마일스톤 추가 완료 - occasionId: ${occasionId}, 총 ${saved.milestones.length}개`,
     );
     return saved;
   }
 
-  async removeCustomMilestone(
+  async removeMilestone(
     userId: string,
     occasionId: string,
-    milestoneIndex: number,
+    milestoneId: string,
   ): Promise<OccasionDocument> {
     this.logger.log(
-      `[${this.removeCustomMilestone.name}] 커스텀 마일스톤 삭제 시작 - userId: ${userId}, occasionId: ${occasionId}, index: ${milestoneIndex}`,
+      `[${this.removeMilestone.name}] 마일스톤 삭제 시작 - userId: ${userId}, occasionId: ${occasionId}, milestoneId: ${milestoneId}`,
     );
 
     const occasion = await this.occasionModel.findById(occasionId).exec();
@@ -197,19 +205,21 @@ export class OccasionsService {
       throw new ForbiddenException('You do not have permission to access this occasion');
     }
 
-    if (milestoneIndex < 0 || milestoneIndex >= occasion.customMilestones.length) {
+    const milestoneIndex = occasion.milestones.findIndex((m) => m.id === milestoneId);
+
+    if (milestoneIndex === -1) {
       this.logger.warn(
-        `[${this.removeCustomMilestone.name}] 잘못된 마일스톤 인덱스 - index: ${milestoneIndex}, total: ${occasion.customMilestones.length}`,
+        `[${this.removeMilestone.name}] 마일스톤을 찾을 수 없음 - milestoneId: ${milestoneId}`,
       );
-      throw new BadRequestException('Invalid milestone index');
+      throw new NotFoundException('Milestone not found');
     }
 
-    const removedMilestone = occasion.customMilestones[milestoneIndex];
-    occasion.customMilestones.splice(milestoneIndex, 1);
+    const removedMilestone = occasion.milestones[milestoneIndex];
+    occasion.milestones.splice(milestoneIndex, 1);
     const saved = await occasion.save();
 
     this.logger.log(
-      `[${this.removeCustomMilestone.name}] 커스텀 마일스톤 삭제 완료 - occasionId: ${occasionId}, 삭제된 마일스톤: ${removedMilestone.name}, 남은 개수: ${saved.customMilestones.length}`,
+      `[${this.removeMilestone.name}] 마일스톤 삭제 완료 - occasionId: ${occasionId}, 삭제된 마일스톤: ${removedMilestone.name}, 남은 개수: ${saved.milestones.length}`,
     );
     return saved;
   }
@@ -230,7 +240,7 @@ export class OccasionsService {
           showProgress: true,
           showCumulativeDuration: true,
         },
-        milestoneRules: {
+        suggestionRules: {
           yearly: true,
           monthly: true,
           weekly: false,
@@ -252,7 +262,7 @@ export class OccasionsService {
           showProgress: true,
           showCumulativeDuration: true,
         },
-        milestoneRules: {
+        suggestionRules: {
           yearly: true,
           monthly: true,
           weekly: false,
@@ -274,7 +284,7 @@ export class OccasionsService {
           showProgress: true,
           showCumulativeDuration: true,
         },
-        milestoneRules: {
+        suggestionRules: {
           yearly: true,
           monthly: true,
           weekly: false,
@@ -296,7 +306,7 @@ export class OccasionsService {
           showProgress: true,
           showCumulativeDuration: true,
         },
-        milestoneRules: {
+        suggestionRules: {
           yearly: true,
           monthly: false,
           weekly: false,
@@ -318,7 +328,7 @@ export class OccasionsService {
           showProgress: true,
           showCumulativeDuration: false,
         },
-        milestoneRules: {
+        suggestionRules: {
           yearly: false,
           monthly: false,
           weekly: false,
@@ -340,7 +350,7 @@ export class OccasionsService {
           showProgress: true,
           showCumulativeDuration: true,
         },
-        milestoneRules: {
+        suggestionRules: {
           yearly: false,
           monthly: false,
           weekly: false,
@@ -362,7 +372,7 @@ export class OccasionsService {
           showProgress: false,
           showCumulativeDuration: true,
         },
-        milestoneRules: {
+        suggestionRules: {
           yearly: true,
           monthly: false,
           weekly: false,
@@ -384,7 +394,7 @@ export class OccasionsService {
           showProgress: true,
           showCumulativeDuration: false,
         },
-        milestoneRules: {
+        suggestionRules: {
           yearly: false,
           monthly: true,
           weekly: false,
@@ -409,7 +419,7 @@ export class OccasionsService {
           showProgress: true,
           showCumulativeDuration: true,
         },
-        milestoneRules: {
+        suggestionRules: {
           yearly: false,
           monthly: false,
           weekly: false,
