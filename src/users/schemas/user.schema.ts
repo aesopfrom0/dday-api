@@ -1,9 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { idTransformPlugin } from '../../common/plugins/id-transform.plugin';
 
-export type UserDocument = User & Document;
+export type UserDocument = User &
+  Document & {
+    id: string; // virtual 필드
+  };
 
-@Schema({ collection: 'users', timestamps: true })
+@Schema({
+  collection: 'users',
+  timestamps: true,
+})
 export class User {
   @Prop({ required: true, unique: true })
   email: string;
@@ -55,6 +62,9 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+// Plugin 적용
+UserSchema.plugin(idTransformPlugin);
 
 // 인덱스 설정
 UserSchema.index({ email: 1 });

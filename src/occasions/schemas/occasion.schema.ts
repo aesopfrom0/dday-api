@@ -1,9 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { idTransformPlugin } from '../../common/plugins/id-transform.plugin';
 
-export type OccasionDocument = Occasion & Document;
+export type OccasionDocument = Occasion &
+  Document & {
+    id: string; // virtual 필드
+  };
 
-@Schema({ collection: 'occasions', timestamps: true })
+@Schema({
+  collection: 'occasions',
+  timestamps: true,
+})
 export class Occasion {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
@@ -144,6 +151,9 @@ export class Occasion {
 }
 
 export const OccasionSchema = SchemaFactory.createForClass(Occasion);
+
+// Plugin 적용
+OccasionSchema.plugin(idTransformPlugin);
 
 // 인덱스 설정
 OccasionSchema.index({ userId: 1, baseDate: -1 });

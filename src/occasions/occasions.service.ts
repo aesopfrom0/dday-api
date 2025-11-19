@@ -6,7 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { Occasion, OccasionDocument } from './schemas/occasion.schema';
 import { CreateOccasionDto } from './dto/create-occasion.dto';
 import { UpdateOccasionDto } from './dto/update-occasion.dto';
@@ -31,7 +31,7 @@ export class OccasionsService {
 
     const occasion = new this.occasionModel({
       ...createOccasionDto,
-      userId: new Types.ObjectId(userId),
+      userId, // Mongoose가 자동으로 ObjectId로 변환
       displayUnits: {
         ...defaultSettings.displayUnits,
         ...createOccasionDto.displayUnits,
@@ -47,7 +47,7 @@ export class OccasionsService {
     });
 
     const saved = await occasion.save();
-    this.logger.log(`[${this.create.name}] 기념일 생성 완료 - occasionId: ${saved._id}`);
+    this.logger.log(`[${this.create.name}] 기념일 생성 완료 - occasionId: ${saved.id}`);
 
     return saved;
   }
@@ -57,7 +57,7 @@ export class OccasionsService {
       `[${this.findAll.name}] 기념일 목록 조회 - userId: ${userId}, category: ${category || 'all'}`,
     );
 
-    const query: any = { userId: new Types.ObjectId(userId) };
+    const query: any = { userId }; // Mongoose가 자동으로 ObjectId로 변환
 
     if (category) {
       query.category = category;
@@ -101,7 +101,15 @@ export class OccasionsService {
       `[${this.update.name}] 기념일 수정 시작 - userId: ${userId}, occasionId: ${occasionId}`,
     );
 
-    const occasion = await this.findOne(userId, occasionId);
+    const occasion = await this.occasionModel.findById(occasionId).exec();
+
+    if (!occasion) {
+      throw new NotFoundException('Occasion not found');
+    }
+
+    if (occasion.userId.toString() !== userId) {
+      throw new ForbiddenException('You do not have permission to access this occasion');
+    }
 
     Object.assign(occasion, updateOccasionDto);
     const updated = await occasion.save();
@@ -115,7 +123,16 @@ export class OccasionsService {
       `[${this.remove.name}] 기념일 삭제 시작 - userId: ${userId}, occasionId: ${occasionId}`,
     );
 
-    const occasion = await this.findOne(userId, occasionId);
+    const occasion = await this.occasionModel.findById(occasionId).exec();
+
+    if (!occasion) {
+      throw new NotFoundException('Occasion not found');
+    }
+
+    if (occasion.userId.toString() !== userId) {
+      throw new ForbiddenException('You do not have permission to access this occasion');
+    }
+
     await occasion.deleteOne();
 
     this.logger.log(`[${this.remove.name}] 기념일 삭제 완료 - occasionId: ${occasionId}`);
@@ -125,12 +142,21 @@ export class OccasionsService {
     userId: string,
     occasionId: string,
     milestone: { name: string; targetDate: Date },
-  ) {
+  ): Promise<OccasionDocument> {
     this.logger.log(
       `[${this.addCustomMilestone.name}] 커스텀 마일스톤 추가 시작 - userId: ${userId}, occasionId: ${occasionId}, milestoneName: ${milestone.name}`,
     );
 
-    const occasion = await this.findOne(userId, occasionId);
+    const occasion = await this.occasionModel.findById(occasionId).exec();
+
+    if (!occasion) {
+      throw new NotFoundException('Occasion not found');
+    }
+
+    if (occasion.userId.toString() !== userId) {
+      throw new ForbiddenException('You do not have permission to access this occasion');
+    }
+
     const user = await this.usersService.findById(userId);
 
     // 프리미엄이 아니면 3개까지만
@@ -152,12 +178,24 @@ export class OccasionsService {
     return saved;
   }
 
-  async removeCustomMilestone(userId: string, occasionId: string, milestoneIndex: number) {
+  async removeCustomMilestone(
+    userId: string,
+    occasionId: string,
+    milestoneIndex: number,
+  ): Promise<OccasionDocument> {
     this.logger.log(
       `[${this.removeCustomMilestone.name}] 커스텀 마일스톤 삭제 시작 - userId: ${userId}, occasionId: ${occasionId}, index: ${milestoneIndex}`,
     );
 
-    const occasion = await this.findOne(userId, occasionId);
+    const occasion = await this.occasionModel.findById(occasionId).exec();
+
+    if (!occasion) {
+      throw new NotFoundException('Occasion not found');
+    }
+
+    if (occasion.userId.toString() !== userId) {
+      throw new ForbiddenException('You do not have permission to access this occasion');
+    }
 
     if (milestoneIndex < 0 || milestoneIndex >= occasion.customMilestones.length) {
       this.logger.warn(

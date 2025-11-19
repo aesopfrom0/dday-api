@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
@@ -10,6 +10,8 @@ import { DevLoginDto } from './dto/dev-login.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -104,6 +106,10 @@ export class AuthService {
 
       return user;
     } catch (error) {
+      this.logger.error(
+        `[${this.validateAppleUser.name}] Apple 로그인 실패 - error: ${error.message}`,
+        error.stack,
+      );
       throw new UnauthorizedException('Invalid Apple token');
     }
   }
@@ -150,6 +156,10 @@ export class AuthService {
         accessToken: newAccessToken,
       };
     } catch (error) {
+      this.logger.error(
+        `[${this.refreshAccessToken.name}] 토큰 갱신 실패 - error: ${error.message}`,
+        error.stack,
+      );
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
