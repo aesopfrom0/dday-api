@@ -111,27 +111,8 @@ export class OccasionsService {
       throw new ForbiddenException('You do not have permission to access this occasion');
     }
 
-    // userId가 실수로 덮어씌워지지 않도록 제거
-    const { ...updateData } = updateOccasionDto;
-
-    // 중첩 객체들을 안전하게 병합
-    if (updateData.displayUnits) {
-      occasion.displayUnits = { ...occasion.displayUnits, ...updateData.displayUnits };
-      delete updateData.displayUnits;
-    }
-
-    if (updateData.displayOptions) {
-      occasion.displayOptions = { ...occasion.displayOptions, ...updateData.displayOptions };
-      delete updateData.displayOptions;
-    }
-
-    if (updateData.suggestionRules) {
-      occasion.suggestionRules = { ...occasion.suggestionRules, ...updateData.suggestionRules };
-      delete updateData.suggestionRules;
-    }
-
-    // 나머지 필드들을 업데이트
-    Object.assign(occasion, updateData);
+    // Mongoose set 메서드로 중첩 객체 안전하게 병합
+    occasion.set(updateOccasionDto);
     const updated = await occasion.save();
 
     this.logger.log(`[${this.update.name}] 기념일 수정 완료 - occasionId: ${occasionId}`);
