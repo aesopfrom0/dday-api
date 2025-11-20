@@ -126,7 +126,7 @@ export class CreateOccasionDto {
     'fandom',
     'debut',
     'payday',
-    'quit_smoking',
+    'quitSmoking',
     'memorial',
     'travel',
     'others',
