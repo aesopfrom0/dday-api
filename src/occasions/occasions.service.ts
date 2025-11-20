@@ -144,7 +144,7 @@ export class OccasionsService {
     milestone: {
       id: string;
       name: string;
-      targetDate: Date;
+      targetDate: string;
       description?: string;
       isFromSuggestion?: boolean;
       suggestionType?: string;

@@ -80,6 +80,9 @@ class MilestoneDto {
   @IsString()
   name: string;
 
+  // "YYYY-MM-DD" 형식 (ISO 8601 날짜 전용)
+  // 예: "2026-04-23"
+  @IsString()
   @IsDateString()
   targetDate: string;
 

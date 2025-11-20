@@ -137,7 +137,9 @@ export class Occasion {
       {
         id: { type: String, required: true },
         name: { type: String, required: true },
-        targetDate: { type: Date, required: true },
+        // 날짜만 저장 (시간대 문제 방지)
+        // 형식: "YYYY-MM-DD" (예: "2026-04-23")
+        targetDate: { type: String, required: true },
         description: { type: String },
         isFromSuggestion: { type: Boolean, default: false },
         suggestionType: { type: String },
@@ -149,7 +151,7 @@ export class Occasion {
   milestones: Array<{
     id: string;
     name: string;
-    targetDate: Date;
+    targetDate: string;
     description?: string;
     isFromSuggestion?: boolean;
     suggestionType?: string;

@@ -90,7 +90,7 @@ export class OccasionsController {
     milestone: {
       id: string;
       name: string;
-      targetDate: Date;
+      targetDate: string; // "YYYY-MM-DD" 형식
       description?: string;
       isFromSuggestion?: boolean;
       suggestionType?: string;
