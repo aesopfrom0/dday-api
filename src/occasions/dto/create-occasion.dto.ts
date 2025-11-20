@@ -119,7 +119,6 @@ export class CreateOccasionDto {
   @IsEnum([
     'couple',
     'marriage',
-    'business',
     'birthday',
     'wedding',
     'baby',
@@ -130,6 +129,7 @@ export class CreateOccasionDto {
     'quit_smoking',
     'memorial',
     'travel',
+    'others',
   ])
   category: string;
 

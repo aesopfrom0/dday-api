@@ -32,7 +32,6 @@ export class Occasion {
     enum: [
       'couple',
       'marriage',
-      'business',
       'birthday',
       'wedding',
       'baby',
@@ -43,12 +42,12 @@ export class Occasion {
       'quit_smoking',
       'memorial',
       'travel',
+      'others',
     ],
   })
   category:
     | 'couple'
     | 'marriage'
-    | 'business'
     | 'birthday'
     | 'wedding'
     | 'baby'
@@ -58,7 +57,8 @@ export class Occasion {
     | 'payday'
     | 'quit_smoking'
     | 'memorial'
-    | 'travel';
+    | 'travel'
+    | 'others';
 
   @Prop({ required: true, default: true })
   isNotificationEnabled: boolean;
