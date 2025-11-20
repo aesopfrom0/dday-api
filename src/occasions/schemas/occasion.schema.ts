@@ -12,7 +12,7 @@ export type OccasionDocument = Occasion &
   timestamps: true,
 })
 export class Occasion {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true, immutable: true })
   userId: Types.ObjectId;
 
   @Prop({ required: true })
@@ -39,7 +39,7 @@ export class Occasion {
       'fandom',
       'debut',
       'payday',
-      'quit_smoking',
+      'quitSmoking',
       'memorial',
       'travel',
       'others',
@@ -55,7 +55,7 @@ export class Occasion {
     | 'fandom'
     | 'debut'
     | 'payday'
-    | 'quit_smoking'
+    | 'quitSmoking'
     | 'memorial'
     | 'travel'
     | 'others';
