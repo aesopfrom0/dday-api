@@ -12,7 +12,7 @@ export type UserDocument = User &
   timestamps: true,
 })
 export class User {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true, unique: true, immutable: true })
   email: string;
 
   @Prop({ required: true })
@@ -21,13 +21,13 @@ export class User {
   @Prop()
   profileImage?: string;
 
-  @Prop({ required: true, enum: ['google', 'apple', 'dev'] })
+  @Prop({ required: true, enum: ['google', 'apple', 'dev'], immutable: true })
   authProvider: 'google' | 'apple' | 'dev';
 
-  @Prop()
+  @Prop({ immutable: true })
   googleId?: string;
 
-  @Prop()
+  @Prop({ immutable: true })
   appleId?: string;
 
   @Prop({

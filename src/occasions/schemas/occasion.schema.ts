@@ -29,6 +29,7 @@ export class Occasion {
 
   @Prop({
     required: true,
+    immutable: true,
     enum: [
       'couple',
       'marriage',
