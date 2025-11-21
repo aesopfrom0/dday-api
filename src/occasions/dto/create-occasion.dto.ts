@@ -8,6 +8,8 @@ import {
   IsArray,
   IsNumber,
   ValidateNested,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsReasonableDateRange } from '../../common/validators/date-range.validator';
@@ -79,6 +81,8 @@ class MilestoneDto {
   id: string;
 
   @IsString()
+  @MinLength(1, { message: '마일스톤 이름을 입력해주세요' })
+  @MaxLength(50, { message: '마일스톤 이름은 50자를 초과할 수 없습니다' })
   name: string;
 
   // "YYYY-MM-DD" 형식 (ISO 8601 날짜 전용)
@@ -107,6 +111,8 @@ class MilestoneDto {
 
 export class CreateOccasionDto {
   @IsString()
+  @MinLength(1, { message: '제목을 입력해주세요' })
+  @MaxLength(100, { message: '제목은 100자를 초과할 수 없습니다' })
   name: string;
 
   // "YYYY-MM-DD" 형식 (ISO 8601 날짜 전용)
