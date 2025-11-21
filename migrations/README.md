@@ -47,6 +47,23 @@ node migrations/20251119-rename-occasion-fields.js down
   - `userId` 타입: String → ObjectId
 - **영향**: occasions 컬렉션
 
+### 20251119-fill-user-settings.ts / 20251119-fill-user-settings-simple.js
+- **목적**: 기존 사용자들의 빈 settings를 기본값으로 채우기
+- **변경사항**:
+  - settings가 비어있는 사용자에게 기본값 설정
+  - `defaultMilestoneDisplayCount`: '2'
+  - `language`: 'ko'
+  - `theme`: 'system'
+- **영향**: users 컬렉션
+- **실행**:
+  ```bash
+  # TypeScript 버전 (느림, NestJS 사용)
+  npx ts-node migrations/20251119-fill-user-settings.ts
+
+  # JavaScript 버전 (빠름, 추천)
+  node migrations/20251119-fill-user-settings-simple.js
+  ```
+
 ## 새 마이그레이션 작성 가이드
 
 ### 1. 파일명 규칙
