@@ -35,13 +35,13 @@ export class User {
       defaultMilestoneDisplayCount: {
         type: String,
         enum: ['1', '2', '3', 'all'],
-        default: '2',
+        default: '1',
       },
       language: { type: String, enum: ['ko', 'en', 'ja'], default: 'ko' },
       theme: { type: String, enum: ['light', 'dark', 'system'], default: 'system' },
     },
     default: () => ({
-      defaultMilestoneDisplayCount: '2',
+      defaultMilestoneDisplayCount: '1',
       language: 'ko',
       theme: 'system',
     }),

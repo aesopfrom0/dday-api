@@ -3,7 +3,6 @@ import {
   ValidationOptions,
   ValidatorConstraint,
   ValidatorConstraintInterface,
-  ValidationArguments,
 } from 'class-validator';
 
 /**
@@ -15,7 +14,7 @@ import {
  */
 @ValidatorConstraint({ name: 'isReasonableDateRange', async: false })
 export class IsReasonableDateRangeConstraint implements ValidatorConstraintInterface {
-  validate(dateString: string, args: ValidationArguments) {
+  validate(dateString: string) {
     if (!dateString || typeof dateString !== 'string') {
       return false;
     }
@@ -36,12 +35,12 @@ export class IsReasonableDateRangeConstraint implements ValidatorConstraintInter
       maxDate.setFullYear(maxDate.getFullYear() + 150);
 
       return date >= minDate && date <= maxDate;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
 
-  defaultMessage(args: ValidationArguments) {
+  defaultMessage() {
     const currentYear = new Date().getFullYear();
     const maxYear = currentYear + 150;
     return `Date must be between 1900-01-01 and ${maxYear}-12-31`;

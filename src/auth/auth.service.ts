@@ -26,13 +26,13 @@ export class AuthService {
     };
 
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: '1h',
+      expiresIn: '3h', // 개발 편의성과 보안 균형 (3시간)
     });
 
     const refreshToken = this.jwtService.sign(
       { sub: user._id.toString() },
       {
-        expiresIn: '30d',
+        expiresIn: '60d', // Rolling Refresh Token: 사용할 때마다 갱신
       },
     );
 
@@ -148,12 +148,21 @@ export class AuthService {
           authProvider: user.authProvider,
         } as JwtPayload,
         {
-          expiresIn: '1h',
+          expiresIn: '3h', // 개발 편의성과 보안 균형 (3시간)
+        },
+      );
+
+      // Rolling Refresh Token: 새로운 Refresh Token도 함께 발급
+      const newRefreshToken = this.jwtService.sign(
+        { sub: user._id.toString() },
+        {
+          expiresIn: '60d', // 사용할 때마다 60일로 리셋
         },
       );
 
       return {
         accessToken: newAccessToken,
+        refreshToken: newRefreshToken, // 새로운 Refresh Token 반환
       };
     } catch (error) {
       this.logger.error(
