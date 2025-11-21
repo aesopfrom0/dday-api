@@ -10,6 +10,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsReasonableDateRange } from '../../common/validators/date-range.validator';
 
 class DisplayUnitsDto {
   @IsOptional()
@@ -84,6 +85,7 @@ class MilestoneDto {
   // 예: "2026-04-23"
   @IsString()
   @IsDateString()
+  @IsReasonableDateRange()
   targetDate: string;
 
   @IsOptional()
@@ -111,6 +113,7 @@ export class CreateOccasionDto {
   // 예: "2025-08-15"
   @IsString()
   @IsDateString()
+  @IsReasonableDateRange()
   baseDate: string;
 
   @IsEnum(['solar', 'lunar'])

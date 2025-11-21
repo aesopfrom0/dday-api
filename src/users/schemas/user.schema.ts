@@ -34,16 +34,20 @@ export class User {
     type: {
       defaultMilestoneDisplayCount: {
         type: String,
-        enum: [1, 2, 3, 'all'],
-        default: 2,
+        enum: ['1', '2', '3', 'all'],
+        default: '2',
       },
       language: { type: String, enum: ['ko', 'en', 'ja'], default: 'ko' },
       theme: { type: String, enum: ['light', 'dark', 'system'], default: 'system' },
     },
-    default: {},
+    default: () => ({
+      defaultMilestoneDisplayCount: '2',
+      language: 'ko',
+      theme: 'system',
+    }),
   })
   settings: {
-    defaultMilestoneDisplayCount: 1 | 2 | 3 | 'all';
+    defaultMilestoneDisplayCount: '1' | '2' | '3' | 'all';
     language: 'ko' | 'en' | 'ja';
     theme: 'light' | 'dark' | 'system';
   };
