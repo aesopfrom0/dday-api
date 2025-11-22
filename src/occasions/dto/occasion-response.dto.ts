@@ -113,6 +113,12 @@ export class OccasionResponseDto {
   excludedMilestones: string[];
 
   @Expose()
+  isPinned: boolean;
+
+  @Expose()
+  nextMilestoneDate?: string;
+
+  @Expose()
   createdAt: Date;
 
   @Expose()

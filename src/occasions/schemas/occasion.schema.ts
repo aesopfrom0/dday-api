@@ -160,6 +160,12 @@ export class Occasion {
 
   @Prop({ type: [String], default: [] })
   excludedMilestones: string[];
+
+  @Prop({ default: false })
+  isPinned: boolean;
+
+  @Prop({ type: String })
+  nextMilestoneDate?: string; // 가장 가까운 upcoming 마일스톤 캐시 (YYYY-MM-DD)
 }
 
 export const OccasionSchema = SchemaFactory.createForClass(Occasion);
@@ -170,3 +176,4 @@ OccasionSchema.plugin(idTransformPlugin);
 // 인덱스 설정
 OccasionSchema.index({ userId: 1, baseDate: -1 });
 OccasionSchema.index({ userId: 1, category: 1 });
+OccasionSchema.index({ userId: 1, isPinned: -1, nextMilestoneDate: 1, baseDate: -1 }); // 정렬용 복합 인덱스

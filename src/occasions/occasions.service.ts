@@ -46,6 +46,11 @@ export class OccasionsService {
       },
     });
 
+    // 마일스톤이 있으면 캐시 업데이트
+    if (occasion.milestones && occasion.milestones.length > 0) {
+      this.updateNextMilestoneCache(occasion);
+    }
+
     const saved = await occasion.save();
     this.logger.log(`[${this.create.name}] 기념일 생성 완료 - occasionId: ${saved.id}`);
 
@@ -63,7 +68,15 @@ export class OccasionsService {
       query.category = category;
     }
 
-    const occasions = await this.occasionModel.find(query).sort({ baseDate: -1 }).exec();
+    // 정렬 순서: 1) isPinned (true 먼저), 2) nextMilestoneDate (빠른 순), 3) baseDate (최근 먼저)
+    const occasions = await this.occasionModel
+      .find(query)
+      .sort({
+        isPinned: -1, // true가 먼저
+        nextMilestoneDate: 1, // 오름차순 (null은 뒤로)
+        baseDate: -1, // 내림차순 (최근 먼저)
+      })
+      .exec();
     this.logger.debug(`[${this.findAll.name}] 조회 완료 - 총 ${occasions.length}개`);
 
     return occasions;
@@ -139,6 +152,57 @@ export class OccasionsService {
     this.logger.log(`[${this.remove.name}] 기념일 삭제 완료 - occasionId: ${occasionId}`);
   }
 
+  async togglePin(userId: string, occasionId: string): Promise<OccasionDocument> {
+    this.logger.log(
+      `[${this.togglePin.name}] Pin 토글 시작 - userId: ${userId}, occasionId: ${occasionId}`,
+    );
+
+    const occasion = await this.occasionModel.findById(occasionId).exec();
+
+    if (!occasion) {
+      throw new NotFoundException('Occasion not found');
+    }
+
+    if (occasion.userId.toString() !== userId) {
+      throw new ForbiddenException('You do not have permission to access this occasion');
+    }
+
+    // Pin 해제는 제한 없음
+    if (!occasion.isPinned) {
+      const user = await this.usersService.findById(userId);
+      const pinnedCount = await this.occasionModel.countDocuments({
+        userId: new Types.ObjectId(userId),
+        isPinned: true,
+      });
+
+      if (!user.subscription.isPremium && pinnedCount >= 1) {
+        this.logger.warn(
+          `[${this.togglePin.name}] 무료 사용자 Pin 제한 초과 - userId: ${userId}, current: ${pinnedCount}`,
+        );
+        throw new BadRequestException(
+          'Free users can only pin 1 occasion. Upgrade to premium for unlimited.',
+        );
+      }
+    }
+
+    occasion.isPinned = !occasion.isPinned;
+    const saved = await occasion.save();
+
+    this.logger.log(
+      `[${this.togglePin.name}] Pin 토글 완료 - occasionId: ${occasionId}, isPinned: ${saved.isPinned}`,
+    );
+    return saved;
+  }
+
+  private updateNextMilestoneCache(occasion: OccasionDocument): void {
+    const today = new Date().toISOString().split('T')[0];
+    const upcomingMilestones = occasion.milestones
+      .filter((m) => m.targetDate >= today)
+      .sort((a, b) => a.targetDate.localeCompare(b.targetDate));
+
+    occasion.nextMilestoneDate = upcomingMilestones[0]?.targetDate;
+  }
+
   async addMilestone(
     userId: string,
     occasionId: string,
@@ -179,6 +243,7 @@ export class OccasionsService {
     }
 
     occasion.milestones.push(milestone);
+    this.updateNextMilestoneCache(occasion);
     const saved = await occasion.save();
 
     this.logger.log(
@@ -217,6 +282,7 @@ export class OccasionsService {
 
     const removedMilestone = occasion.milestones[milestoneIndex];
     occasion.milestones.splice(milestoneIndex, 1);
+    this.updateNextMilestoneCache(occasion);
     const saved = await occasion.save();
 
     this.logger.log(
