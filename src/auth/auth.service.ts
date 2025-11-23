@@ -1,22 +1,28 @@
 import { Injectable, UnauthorizedException, BadRequestException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { OAuth2Client } from 'google-auth-library';
 import { UsersService } from '../users/users.service';
 import { UserDocument } from '../users/schemas/user.schema';
 import { JwtPayload } from './strategies/jwt.strategy';
 import appleSignin from 'apple-signin-auth';
 import { AppleLoginDto } from './dto/apple-login.dto';
 import { DevLoginDto } from './dto/dev-login.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private googleClient: OAuth2Client;
 
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) {}
+  ) {
+    // Google OAuth2 클라이언트 초기화
+    this.googleClient = new OAuth2Client(this.configService.get<string>('GOOGLE_CLIENT_ID'));
+  }
 
   async generateTokens(user: UserDocument) {
     const payload: JwtPayload = {
@@ -73,6 +79,74 @@ export class AuthService {
     return user;
   }
 
+  /**
+   * 모바일 앱용 Google 로그인
+   * ID Token을 검증하고 사용자를 생성/조회
+   */
+  async googleLogin(googleLoginDto: GoogleLoginDto): Promise<UserDocument> {
+    const { idToken } = googleLoginDto;
+
+    try {
+      // Google ID Token 검증
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken,
+        audience: [
+          this.configService.get<string>('GOOGLE_CLIENT_ID'),
+          // iOS 클라이언트 ID도 허용
+          '159665898064-hifl2hu2hful2oeutadgvkkcq3akvfps.apps.googleusercontent.com',
+        ],
+      });
+
+      const payload = ticket.getPayload();
+      if (!payload) {
+        throw new UnauthorizedException('Invalid Google token payload');
+      }
+
+      const { sub: googleId, email, name, picture: profileImage } = payload;
+
+      if (!email) {
+        throw new BadRequestException('Email is required from Google');
+      }
+
+      // 기존 사용자 조회 또는 신규 생성
+      let user = await this.usersService.findByGoogleId(googleId);
+
+      if (!user) {
+        // 이메일로 기존 사용자 확인
+        const existingUser = await this.usersService.findByEmail(email);
+        if (existingUser) {
+          // 이미 다른 방식으로 가입한 경우 Google ID 연결
+          if (existingUser.authProvider !== 'google') {
+            throw new BadRequestException('Email already registered with different provider');
+          }
+          user = existingUser;
+        } else {
+          // 신규 사용자 생성
+          user = await this.usersService.create({
+            email,
+            name: name || 'Google User',
+            profileImage,
+            googleId,
+            authProvider: 'google',
+          });
+        }
+      }
+
+      return user;
+    } catch (error) {
+      this.logger.error(
+        `[${this.googleLogin.name}] Google 로그인 실패 - error: ${error.message}`,
+        error.stack,
+      );
+
+      if (error instanceof BadRequestException || error instanceof UnauthorizedException) {
+        throw error;
+      }
+
+      throw new UnauthorizedException('Invalid Google token');
+    }
+  }
+
   async validateAppleUser(appleLoginDto: AppleLoginDto): Promise<UserDocument> {
     const { identityToken, email, name } = appleLoginDto;
 
@@ -115,12 +189,6 @@ export class AuthService {
   }
 
   async devLogin(devLoginDto: DevLoginDto): Promise<UserDocument> {
-    const nodeEnv = this.configService.get<string>('NODE_ENV');
-
-    if (nodeEnv !== 'development' && nodeEnv !== 'local') {
-      throw new UnauthorizedException('Dev login only available in development mode');
-    }
-
     const { email, name } = devLoginDto;
 
     let user = await this.usersService.findByEmail(email);

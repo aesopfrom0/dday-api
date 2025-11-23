@@ -70,7 +70,6 @@ export const UserSchema = SchemaFactory.createForClass(User);
 // Plugin 적용
 UserSchema.plugin(idTransformPlugin);
 
-// 인덱스 설정
-UserSchema.index({ email: 1 });
+// 인덱스 설정 (email은 unique: true로 자동 인덱스 생성)
 UserSchema.index({ googleId: 1 });
 UserSchema.index({ appleId: 1 });

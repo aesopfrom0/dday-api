@@ -3,8 +3,10 @@ import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
+import { DevOnlyGuard } from './guards/dev-only.guard';
 import { AppleLoginDto } from './dto/apple-login.dto';
 import { DevLoginDto } from './dto/dev-login.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -27,6 +29,16 @@ export class AuthController {
     return res.json(tokens);
   }
 
+  /**
+   * 모바일 앱용 Google 로그인
+   * ID Token을 받아서 검증 후 JWT 발급
+   */
+  @Post('google')
+  async googleMobileAuth(@Body() googleLoginDto: GoogleLoginDto) {
+    const user = await this.authService.googleLogin(googleLoginDto);
+    return this.authService.generateTokens(user);
+  }
+
   @Post('apple')
   async appleAuth(@Body() appleLoginDto: AppleLoginDto) {
     const user = await this.authService.validateAppleUser(appleLoginDto);
@@ -34,6 +46,7 @@ export class AuthController {
   }
 
   @Post('dev-login')
+  @UseGuards(DevOnlyGuard)
   async devLogin(@Body() devLoginDto: DevLoginDto) {
     const user = await this.authService.devLogin(devLoginDto);
     return this.authService.generateTokens(user);
