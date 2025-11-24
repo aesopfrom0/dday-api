@@ -160,21 +160,29 @@ export class AuthService {
       });
 
       const appleId = appleIdTokenClaims.sub;
+      const tokenEmail = appleIdTokenClaims.email; // 토큰에도 이메일이 포함될 수 있음
+
+      this.logger.log(
+        `[${this.validateAppleUser.name}] Apple 로그인 시도 - appleId: ${appleId}, tokenEmail: ${tokenEmail}, dtoEmail: ${email}`,
+      );
 
       let user = await this.usersService.findByAppleId(appleId);
 
       if (!user) {
-        if (!email) {
+        // 클라이언트에서 전달한 email 또는 토큰에 포함된 email 사용
+        const userEmail = email || tokenEmail;
+
+        if (!userEmail) {
           throw new BadRequestException('Email is required for first-time Apple sign in');
         }
 
-        const existingUser = await this.usersService.findByEmail(email);
+        const existingUser = await this.usersService.findByEmail(userEmail);
         if (existingUser) {
           throw new BadRequestException('Email already registered with different provider');
         }
 
         user = await this.usersService.create({
-          email,
+          email: userEmail,
           name: name || 'Apple User',
           appleId,
           authProvider: 'apple',
@@ -187,6 +195,11 @@ export class AuthService {
         `[${this.validateAppleUser.name}] Apple 로그인 실패 - error: ${error.message}`,
         error.stack,
       );
+
+      if (error instanceof BadRequestException || error instanceof UnauthorizedException) {
+        throw error;
+      }
+
       throw new UnauthorizedException('Invalid Apple token');
     }
   }
