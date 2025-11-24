@@ -88,13 +88,16 @@ export class AuthService {
 
     try {
       // Google ID Token 검증
+      // audience: Web Client ID + iOS Client ID 모두 허용
+      const audiences = [this.configService.get<string>('GOOGLE_CLIENT_ID')];
+      const iosClientId = this.configService.get<string>('GOOGLE_IOS_CLIENT_ID');
+      if (iosClientId) {
+        audiences.push(iosClientId);
+      }
+
       const ticket = await this.googleClient.verifyIdToken({
         idToken,
-        audience: [
-          this.configService.get<string>('GOOGLE_CLIENT_ID'),
-          // iOS 클라이언트 ID도 허용
-          '159665898064-hifl2hu2hful2oeutadgvkkcq3akvfps.apps.googleusercontent.com',
-        ],
+        audience: audiences,
       });
 
       const payload = ticket.getPayload();

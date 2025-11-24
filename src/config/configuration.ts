@@ -9,4 +9,17 @@ export default () => ({
   database: {
     uri: process.env.MONGODB_URI,
   },
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    iosClientId: process.env.GOOGLE_IOS_CLIENT_ID,
+    callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+  },
+  apple: {
+    clientId: process.env.APPLE_CLIENT_ID,
+    clientSecret: process.env.APPLE_CLIENT_SECRET,
+  },
+  jwt: {
+    secret: process.env.JWT_SECRET,
+  },
 });
