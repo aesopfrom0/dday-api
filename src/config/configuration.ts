@@ -17,7 +17,6 @@ export default () => ({
   },
   apple: {
     clientId: process.env.APPLE_CLIENT_ID,
-    clientSecret: process.env.APPLE_CLIENT_SECRET,
   },
   jwt: {
     secret: process.env.JWT_SECRET,
