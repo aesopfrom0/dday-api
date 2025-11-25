@@ -21,7 +21,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {
     // Google OAuth2 클라이언트 초기화
-    this.googleClient = new OAuth2Client(this.configService.get<string>('GOOGLE_CLIENT_ID'));
+    this.googleClient = new OAuth2Client(this.configService.get<string>('google.clientId'));
   }
 
   async generateTokens(user: UserDocument) {
@@ -89,8 +89,8 @@ export class AuthService {
     try {
       // Google ID Token 검증
       // audience: Web Client ID + iOS Client ID 모두 허용
-      const audiences = [this.configService.get<string>('GOOGLE_CLIENT_ID')];
-      const iosClientId = this.configService.get<string>('GOOGLE_IOS_CLIENT_ID');
+      const audiences = [this.configService.get<string>('google.clientId')];
+      const iosClientId = this.configService.get<string>('google.iosClientId');
       if (iosClientId) {
         audiences.push(iosClientId);
       }
@@ -155,7 +155,7 @@ export class AuthService {
 
     try {
       const appleIdTokenClaims = await appleSignin.verifyIdToken(identityToken, {
-        audience: this.configService.get<string>('APPLE_CLIENT_ID'),
+        audience: this.configService.get<string>('apple.clientId'),
         ignoreExpiration: false,
       });
 
