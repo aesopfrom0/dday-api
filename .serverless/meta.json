@@ -1,10 +1,10 @@
 {
-  "/Users/aesop/new-nestjs-template/serverless.yml": {
-    "versionFramework": "4.10.1",
-    "servicePath": "/Users/aesop/new-nestjs-template/serverless.yml",
+  "/Users/aesopmini/dday-api/serverless.yml": {
+    "versionFramework": "4.25.0",
+    "servicePath": "/Users/aesopmini/dday-api/serverless.yml",
     "serviceConfigFileName": "serverless.yml",
     "service": {
-      "service": "nestjs-template",
+      "service": "dday-api",
       "provider": {
         "name": "aws",
         "runtime": "nodejs22.x",
@@ -13,43 +13,325 @@
         "memorySize": 256,
         "timeout": 30,
         "environment": {
-          "DATABASE_URL": "postgresql://graba_owner:npg_JizLnF9VXQ8m@ep-billowing-sun-a16nhtce-pooler.ap-southeast-1.aws.neon.tech/graba?sslmode=require",
-          "NODE_ENV": "dev"
+          "MONGODB_URI": "process.env.MONGODB_URI || 'mongodb://localhost:27017/dday'",
+          "NODE_ENV": "development",
+          "JWT_SECRET": "<REDACTED>",
+          "GOOGLE_CLIENT_ID": "461637162830-0e4gsorqpempoho6blepn9h8p6m21832.apps.googleusercontent.com",
+          "GOOGLE_CLIENT_SECRET": "<REDACTED>",
+          "GOOGLE_IOS_CLIENT_ID": "461637162830-mh4rjrputda0342g1od9o3i98ncha1am.apps.googleusercontent.com",
+          "GOOGLE_CALLBACK_URL": "https://PLACEHOLDER/auth/google/callback",
+          "APPLE_CLIENT_ID": "com.graba.dday"
         },
         "httpApi": {
-          "cors": {
-            "allowedOrigins": [
-              "*"
-            ],
-            "allowedHeaders": [
-              "Content-Type",
-              "Authorization",
-              "X-Api-Key"
-            ],
-            "allowedMethods": [
-              "GET",
-              "POST",
-              "PUT",
-              "DELETE",
-              "PATCH",
-              "OPTIONS"
-            ],
-            "allowCredentials": "<REDACTED>",
-            "maxAge": 86400
+          "cors": true
+        },
+        "versionFunctions": true,
+        "compiledCloudFormationTemplate": {
+          "AWSTemplateFormatVersion": "2010-09-09",
+          "Description": "The AWS CloudFormation template for this Serverless application",
+          "Resources": {
+            "AppLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/dday-api-dev-app"
+              }
+            },
+            "IamRoleLambdaExecution": {
+              "Type": "AWS::IAM::Role",
+              "Properties": {
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": [
+                          "lambda.amazonaws.com"
+                        ]
+                      },
+                      "Action": [
+                        "sts:AssumeRole"
+                      ]
+                    }
+                  ]
+                },
+                "Policies": [
+                  {
+                    "PolicyName": {
+                      "Fn::Join": [
+                        "-",
+                        [
+                          "dday-api",
+                          "dev",
+                          "lambda"
+                        ]
+                      ]
+                    },
+                    "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:CreateLogStream",
+                            "logs:CreateLogGroup",
+                            "logs:TagResource"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/dday-api-dev*:*"
+                            }
+                          ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:PutLogEvents"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/dday-api-dev*:*:*"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "Path": "/",
+                "RoleName": {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "dday-api",
+                      "dev",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "lambdaRole"
+                    ]
+                  ]
+                }
+              }
+            },
+            "AppLambdaFunction": {
+              "Type": "AWS::Lambda::Function",
+              "Properties": {
+                "Code": {
+                  "S3Bucket": "serverless-framework-deployments-ap-northeast-2-43c8f9a3-0b47",
+                  "S3Key": "serverless/dday-api/dev/1764573298274-2025-12-01T07:14:58.274Z/dday-api.zip"
+                },
+                "Handler": "dist/lambda.handler",
+                "Runtime": "nodejs22.x",
+                "FunctionName": "dday-api-dev-app",
+                "MemorySize": 256,
+                "Timeout": 30,
+                "Environment": {
+                  "Variables": {
+                    "MONGODB_URI": "process.env.MONGODB_URI || 'mongodb://localhost:27017/dday'",
+                    "NODE_ENV": "development",
+                    "JWT_SECRET": "<REDACTED>",
+                    "GOOGLE_CLIENT_ID": "461637162830-0e4gsorqpempoho6blepn9h8p6m21832.apps.googleusercontent.com",
+                    "GOOGLE_CLIENT_SECRET": "<REDACTED>",
+                    "GOOGLE_IOS_CLIENT_ID": "461637162830-mh4rjrputda0342g1od9o3i98ncha1am.apps.googleusercontent.com",
+                    "GOOGLE_CALLBACK_URL": "https://PLACEHOLDER/auth/google/callback",
+                    "APPLE_CLIENT_ID": "com.graba.dday"
+                  }
+                },
+                "Role": {
+                  "Fn::GetAtt": [
+                    "IamRoleLambdaExecution",
+                    "Arn"
+                  ]
+                }
+              },
+              "DependsOn": [
+                "AppLogGroup"
+              ]
+            },
+            "AppLambdaVersionwFu2IVyenX3Tr8UjbtSMwVwOsa9p95gbnNSJF9bLUU": {
+              "Type": "AWS::Lambda::Version",
+              "DeletionPolicy": "Retain",
+              "Properties": {
+                "FunctionName": {
+                  "Ref": "AppLambdaFunction"
+                },
+                "CodeSha256": "wU6YfGdM0SN739lMKV0WiHhNH+9AJN6GUsK4RSieb2s="
+              }
+            },
+            "HttpApi": {
+              "Type": "AWS::ApiGatewayV2::Api",
+              "Properties": {
+                "Name": "dev-dday-api",
+                "ProtocolType": "HTTP",
+                "CorsConfiguration": {
+                  "AllowCredentials": "<REDACTED>",
+                  "AllowHeaders": [
+                    "Content-Type",
+                    "X-Amz-Date",
+                    "Authorization",
+                    "X-Api-Key",
+                    "X-Amz-Security-Token",
+                    "X-Amz-User-Agent",
+                    "X-Amzn-Trace-Id"
+                  ],
+                  "AllowMethods": [
+                    "OPTIONS",
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "PATCH",
+                    "HEAD",
+                    "DELETE"
+                  ],
+                  "AllowOrigins": [
+                    "*"
+                  ]
+                }
+              }
+            },
+            "HttpApiStage": {
+              "Type": "AWS::ApiGatewayV2::Stage",
+              "Properties": {
+                "ApiId": {
+                  "Ref": "HttpApi"
+                },
+                "StageName": "$default",
+                "AutoDeploy": true,
+                "DefaultRouteSettings": {
+                  "DetailedMetricsEnabled": false
+                }
+              }
+            },
+            "AppLambdaPermissionHttpApi": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
+                "FunctionName": {
+                  "Fn::GetAtt": [
+                    "AppLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":execute-api:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":",
+                      {
+                        "Ref": "HttpApi"
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              }
+            },
+            "HttpApiIntegrationApp": {
+              "Type": "AWS::ApiGatewayV2::Integration",
+              "Properties": {
+                "ApiId": {
+                  "Ref": "HttpApi"
+                },
+                "IntegrationType": "AWS_PROXY",
+                "IntegrationUri": {
+                  "Fn::GetAtt": [
+                    "AppLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "PayloadFormatVersion": "2.0",
+                "TimeoutInMillis": 30000
+              }
+            },
+            "HttpApiRouteAnyProxyVar": {
+              "Type": "AWS::ApiGatewayV2::Route",
+              "Properties": {
+                "ApiId": {
+                  "Ref": "HttpApi"
+                },
+                "RouteKey": "ANY /{proxy+}",
+                "Target": {
+                  "Fn::Join": [
+                    "/",
+                    [
+                      "integrations",
+                      {
+                        "Ref": "HttpApiIntegrationApp"
+                      }
+                    ]
+                  ]
+                }
+              },
+              "DependsOn": "HttpApiIntegrationApp"
+            }
+          },
+          "Outputs": {
+            "ServerlessDeploymentBucketName": {
+              "Value": "serverless-framework-deployments-ap-northeast-2-43c8f9a3-0b47",
+              "Export": {
+                "Name": "sls-dday-api-dev-ServerlessDeploymentBucketName"
+              }
+            },
+            "AppLambdaFunctionQualifiedArn": {
+              "Description": "Current Lambda function version",
+              "Value": {
+                "Ref": "AppLambdaVersionwFu2IVyenX3Tr8UjbtSMwVwOsa9p95gbnNSJF9bLUU"
+              },
+              "Export": {
+                "Name": "sls-dday-api-dev-AppLambdaFunctionQualifiedArn"
+              }
+            },
+            "HttpApiId": {
+              "Description": "Id of the HTTP API",
+              "Value": {
+                "Ref": "HttpApi"
+              },
+              "Export": {
+                "Name": "sls-dday-api-dev-HttpApiId"
+              }
+            },
+            "HttpApiUrl": {
+              "Description": "URL of the HTTP API",
+              "Value": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "https://",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    ".execute-api.",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ".",
+                    {
+                      "Ref": "AWS::URLSuffix"
+                    }
+                  ]
+                ]
+              },
+              "Export": {
+                "Name": "sls-dday-api-dev-HttpApiUrl"
+              }
+            }
           }
         },
-        "versionFunctions": true
-      },
-      "package": {
-        "exclude": [
-          ".git/**",
-          "test/**",
-          "prisma/migrations/**",
-          "README.md",
-          ".env*",
-          "node_modules/@prisma/engines/**",
-          "node_modules/.prisma/**"
-        ]
+        "vpc": {}
       },
       "functions": {
         "app": {
@@ -59,39 +341,51 @@
               "httpApi": {
                 "path": "/{proxy+}",
                 "method": "any"
-              }
+              },
+              "resolvedMethod": "ANY",
+              "resolvedPath": "/{proxy+}"
             }
-          ]
+          ],
+          "name": "dday-api-dev-app",
+          "package": {},
+          "memory": 256,
+          "timeout": 30,
+          "runtime": "nodejs22.x",
+          "vpc": {},
+          "versionLogicalId": "AppLambdaVersionwFu2IVyenX3Tr8UjbtSMwVwOsa9p95gbnNSJF9bLUU"
         }
       },
       "plugins": [
-        "serverless-offline",
-        "serverless-esbuild"
+        "serverless-offline"
       ],
       "custom": {
         "serverless-offline": {
-          "httpPort": 9001,
-          "noPrependStageInUrl": true
+          "httpPort": 25010,
+          "noPrependStageInUrl": true,
+          "useChildProcesses": true,
+          "allowCache": true,
+          "lambdaRuntime": "nodejs22.x",
+          "printOutput": true,
+          "showDuration": true,
+          "verbose": true
         },
-        "build": {
-          "esbuild": {
-            "bundle": true,
-            "minify": false,
-            "sourcemap": true,
-            "target": "node22",
-            "external": [
-              "express",
-              "cache-manager",
-              "@nestjs/websockets",
-              "@nestjs/microservices",
-              "class-transformer",
-              "class-validator",
-              "reflect-metadata",
-              "rxjs",
-              "@nestjs/platform-express",
-              "@nestjs/schedule"
-            ]
-          },
+        "esbuild": {
+          "bundle": true,
+          "minify": false,
+          "sourcemap": true,
+          "target": "node22",
+          "external": [
+            "express",
+            "cache-manager",
+            "@nestjs/websockets",
+            "@nestjs/microservices",
+            "class-transformer",
+            "class-validator",
+            "reflect-metadata",
+            "rxjs",
+            "@nestjs/platform-express",
+            "@nestjs/schedule"
+          ],
           "exclude": [
             "aws-sdk"
           ]
@@ -106,32 +400,325 @@
       "memorySize": 256,
       "timeout": 30,
       "environment": {
-        "DATABASE_URL": "postgresql://graba_owner:npg_JizLnF9VXQ8m@ep-billowing-sun-a16nhtce-pooler.ap-southeast-1.aws.neon.tech/graba?sslmode=require",
-        "NODE_ENV": "dev"
+        "MONGODB_URI": "process.env.MONGODB_URI || 'mongodb://localhost:27017/dday'",
+        "NODE_ENV": "development",
+        "JWT_SECRET": "<REDACTED>",
+        "GOOGLE_CLIENT_ID": "461637162830-0e4gsorqpempoho6blepn9h8p6m21832.apps.googleusercontent.com",
+        "GOOGLE_CLIENT_SECRET": "<REDACTED>",
+        "GOOGLE_IOS_CLIENT_ID": "461637162830-mh4rjrputda0342g1od9o3i98ncha1am.apps.googleusercontent.com",
+        "GOOGLE_CALLBACK_URL": "https://PLACEHOLDER/auth/google/callback",
+        "APPLE_CLIENT_ID": "com.graba.dday"
       },
       "httpApi": {
-        "cors": {
-          "allowedOrigins": [
-            "*"
-          ],
-          "allowedHeaders": [
-            "Content-Type",
-            "Authorization",
-            "X-Api-Key"
-          ],
-          "allowedMethods": [
-            "GET",
-            "POST",
-            "PUT",
-            "DELETE",
-            "PATCH",
-            "OPTIONS"
-          ],
-          "allowCredentials": "<REDACTED>",
-          "maxAge": 86400
+        "cors": true
+      },
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "AppLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/dday-api-dev-app"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "dday-api",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup",
+                          "logs:TagResource"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/dday-api-dev*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/dday-api-dev*:*:*"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "dday-api",
+                    "dev",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "AppLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-framework-deployments-ap-northeast-2-43c8f9a3-0b47",
+                "S3Key": "serverless/dday-api/dev/1764573298274-2025-12-01T07:14:58.274Z/dday-api.zip"
+              },
+              "Handler": "dist/lambda.handler",
+              "Runtime": "nodejs22.x",
+              "FunctionName": "dday-api-dev-app",
+              "MemorySize": 256,
+              "Timeout": 30,
+              "Environment": {
+                "Variables": {
+                  "MONGODB_URI": "process.env.MONGODB_URI || 'mongodb://localhost:27017/dday'",
+                  "NODE_ENV": "development",
+                  "JWT_SECRET": "<REDACTED>",
+                  "GOOGLE_CLIENT_ID": "461637162830-0e4gsorqpempoho6blepn9h8p6m21832.apps.googleusercontent.com",
+                  "GOOGLE_CLIENT_SECRET": "<REDACTED>",
+                  "GOOGLE_IOS_CLIENT_ID": "461637162830-mh4rjrputda0342g1od9o3i98ncha1am.apps.googleusercontent.com",
+                  "GOOGLE_CALLBACK_URL": "https://PLACEHOLDER/auth/google/callback",
+                  "APPLE_CLIENT_ID": "com.graba.dday"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "AppLogGroup"
+            ]
+          },
+          "AppLambdaVersionwFu2IVyenX3Tr8UjbtSMwVwOsa9p95gbnNSJF9bLUU": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "AppLambdaFunction"
+              },
+              "CodeSha256": "wU6YfGdM0SN739lMKV0WiHhNH+9AJN6GUsK4RSieb2s="
+            }
+          },
+          "HttpApi": {
+            "Type": "AWS::ApiGatewayV2::Api",
+            "Properties": {
+              "Name": "dev-dday-api",
+              "ProtocolType": "HTTP",
+              "CorsConfiguration": {
+                "AllowCredentials": "<REDACTED>",
+                "AllowHeaders": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "AllowMethods": [
+                  "OPTIONS",
+                  "GET",
+                  "POST",
+                  "PUT",
+                  "PATCH",
+                  "HEAD",
+                  "DELETE"
+                ],
+                "AllowOrigins": [
+                  "*"
+                ]
+              }
+            }
+          },
+          "HttpApiStage": {
+            "Type": "AWS::ApiGatewayV2::Stage",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "StageName": "$default",
+              "AutoDeploy": true,
+              "DefaultRouteSettings": {
+                "DetailedMetricsEnabled": false
+              }
+            }
+          },
+          "AppLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "AppLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationApp": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "Fn::GetAtt": [
+                  "AppLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteAnyProxyVar": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "ANY /{proxy+}",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationApp"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationApp"
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "serverless-framework-deployments-ap-northeast-2-43c8f9a3-0b47",
+            "Export": {
+              "Name": "sls-dday-api-dev-ServerlessDeploymentBucketName"
+            }
+          },
+          "AppLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "AppLambdaVersionwFu2IVyenX3Tr8UjbtSMwVwOsa9p95gbnNSJF9bLUU"
+            },
+            "Export": {
+              "Name": "sls-dday-api-dev-AppLambdaFunctionQualifiedArn"
+            }
+          },
+          "HttpApiId": {
+            "Description": "Id of the HTTP API",
+            "Value": {
+              "Ref": "HttpApi"
+            },
+            "Export": {
+              "Name": "sls-dday-api-dev-HttpApiId"
+            }
+          },
+          "HttpApiUrl": {
+            "Description": "URL of the HTTP API",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  "https://",
+                  {
+                    "Ref": "HttpApi"
+                  },
+                  ".execute-api.",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ".",
+                  {
+                    "Ref": "AWS::URLSuffix"
+                  }
+                ]
+              ]
+            },
+            "Export": {
+              "Name": "sls-dday-api-dev-HttpApiUrl"
+            }
+          }
         }
       },
-      "versionFunctions": true
+      "vpc": {}
     },
     "dashboard": {
       "isEnabledForService": false,
@@ -142,25 +729,352 @@
       "serviceProvider": null,
       "instanceParameters": null
     },
-    "error": {
-      "message": "Serverless now includes ESBuild and supports Typescript out-of-the-box. But this conflicts with the plugin 'serverless-esbuild'.\nYou can either remove this plugin and try Serverless's ESBuild support builtin, or you can set 'build.esbuild' to false in your 'serverless.yml'.\nFor more information go to, https://slss.io/buildoptions",
-      "stack": "ServerlessError2: Serverless now includes ESBuild and supports Typescript out-of-the-box. But this conflicts with the plugin 'serverless-esbuild'.\nYou can either remove this plugin and try Serverless's ESBuild support builtin, or you can set 'build.esbuild' to false in your 'serverless.yml'.\nFor more information go to, https://slss.io/buildoptions\n    at PluginManager.addPlugin (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:775:65)\n    at file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:775:1434\n    at Array.forEach (<anonymous>)\n    at PluginManager.loadAllPlugins (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:775:1412)\n    at async Serverless.init (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:782:9840)\n    at async runFramework (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:809:837)\n    at async TraditionalRunner.run (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:805:28308)\n    at async route (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:843:2779)\n    at async Object.run (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:844:3661)\n    at async run2 (file:///Users/aesop/.serverless/releases/4.10.1/package/dist/sf-core.js:844:4814)",
-      "code": "PLUGIN_TYPESCRIPT_CONFLICT"
-    },
-    "serviceRawFile": "service: nestjs-template\n\nprovider:\n  name: aws\n  runtime: nodejs22.x\n  region: ap-northeast-2\n  stage: ${opt:stage, 'dev'}\n  memorySize: 256\n  timeout: 30\n\n  environment:\n    DATABASE_URL: ${env:DATABASE_URL}\n    NODE_ENV: ${opt:stage, 'dev'}\n\n  httpApi:\n    cors:\n      allowedOrigins:\n        - '*'\n      allowedHeaders:\n        - Content-Type\n        - Authorization\n        - X-Api-Key\n      allowedMethods:\n        - GET\n        - POST\n        - PUT\n        - DELETE\n        - PATCH\n        - OPTIONS\n      allowCredentials: true\n      maxAge: 86400\n\npackage:\n  exclude:\n    - .git/**\n    - test/**\n    - prisma/migrations/**\n    - README.md\n    - .env*\n    - node_modules/@prisma/engines/**\n    - node_modules/.prisma/**\n\nfunctions:\n  app:\n    handler: dist/lambda.handler\n    events:\n      - httpApi:\n          path: /{proxy+}\n          method: any\n\nplugins:\n  - serverless-offline\n  - serverless-esbuild\n\ncustom:\n  serverless-offline:\n    httpPort: 9001\n    noPrependStageInUrl: true\n  build:\n    esbuild:\n      bundle: true\n      minify: false\n      sourcemap: true\n      target: node22\n      external:\n        - express\n        - cache-manager\n        - '@nestjs/websockets'\n        - '@nestjs/microservices'\n        - class-transformer\n        - class-validator\n        - reflect-metadata\n        - rxjs\n        - '@nestjs/platform-express'\n        - '@nestjs/schedule'\n    exclude:\n      - aws-sdk\n",
+    "serviceRawFile": "service: dday-api\n\nprovider:\n  name: aws\n  runtime: nodejs22.x\n  region: ap-northeast-2\n  stage: ${opt:stage, 'dev'}\n  memorySize: 256\n  timeout: 30\n\n  environment:\n    MONGODB_URI: ${env:MONGODB_URI}\n    NODE_ENV: ${env:NODE_ENV}\n    JWT_SECRET: ${env:JWT_SECRET}\n    GOOGLE_CLIENT_ID: ${env:GOOGLE_CLIENT_ID}\n    GOOGLE_CLIENT_SECRET: ${env:GOOGLE_CLIENT_SECRET}\n    GOOGLE_IOS_CLIENT_ID: ${env:GOOGLE_IOS_CLIENT_ID}\n    GOOGLE_CALLBACK_URL: ${env:GOOGLE_CALLBACK_URL}\n    APPLE_CLIENT_ID: ${env:APPLE_CLIENT_ID}\n\n  httpApi:\n    cors: true\n\n# package:\n#   exclude:\n#     # - node_modules/**\n#     - .serverless/**\n#     - .webpack/**\n#     - test/**\n#     - README.md\n#     - .env*\n#     - node_modules/@prisma/engines/**\n#     - node_mod극ules/.prisma/**\n\nfunctions:\n  app:\n    handler: dist/lambda.handler\n    events:\n      - httpApi:\n          path: /{proxy+}\n          method: any\n\nplugins:\n  - serverless-offline\n\ncustom:\n  serverless-offline:\n    httpPort: 25010\n    noPrependStageInUrl: true\n    useChildProcesses: true\n    allowCache: true\n    lambdaRuntime: nodejs22.x\n    printOutput: true\n    showDuration: true\n    verbose: true\n  esbuild:\n    bundle: true\n    minify: false\n    sourcemap: true\n    target: node22\n    external:\n      - express\n      - cache-manager\n      - '@nestjs/websockets'\n      - '@nestjs/microservices'\n      - class-transformer\n      - class-validator\n      - reflect-metadata\n      - rxjs\n      - '@nestjs/platform-express'\n      - '@nestjs/schedule'\n    exclude:\n      - aws-sdk\n",
     "command": [
-      "offline"
+      "deploy"
     ],
-    "options": {},
+    "options": {
+      "stage": "dev",
+      "verbose": true
+    },
     "orgId": "ab051dd3-9ce5-44f8-8dbd-39c31285f7b9",
     "orgName": "grabalab",
     "userId": "0XldcN8WyKH4x42vCR",
     "userName": "grabalab",
     "serviceProviderAwsAccountId": "308066567345",
-    "serviceProviderAwsCfStackId": null,
-    "serviceProviderAwsCfStackCreated": null,
-    "serviceProviderAwsCfStackUpdated": null,
-    "serviceProviderAwsCfStackStatus": null,
-    "serviceProviderAwsCfStackOutputs": null
+    "serviceProviderAwsCfStackName": "dday-api-dev",
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:ap-northeast-2:308066567345:stack/dday-api-dev/02048160-ce84-11f0-9aad-02040ceca159",
+    "serviceProviderAwsCfStackCreated": "2025-12-01T07:04:41.453Z",
+    "serviceProviderAwsCfStackUpdated": "2025-12-01T07:10:54.365Z",
+    "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
+    "serviceProviderAwsCfStackOutputs": [
+      {
+        "OutputKey": "AppLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:ap-northeast-2:308066567345:function:dday-api-dev-app:2",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-dday-api-dev-AppLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "HttpApiId",
+        "OutputValue": "qwul1zxd01",
+        "Description": "Id of the HTTP API",
+        "ExportName": "sls-dday-api-dev-HttpApiId"
+      },
+      {
+        "OutputKey": "ServerlessDeploymentBucketName",
+        "OutputValue": "serverless-framework-deployments-ap-northeast-2-43c8f9a3-0b47",
+        "ExportName": "sls-dday-api-dev-ServerlessDeploymentBucketName"
+      },
+      {
+        "OutputKey": "HttpApiUrl",
+        "OutputValue": "https://qwul1zxd01.execute-api.ap-northeast-2.amazonaws.com",
+        "Description": "URL of the HTTP API",
+        "ExportName": "sls-dday-api-dev-HttpApiUrl"
+      }
+    ],
+    "compiledCloudFormationTemplate": {
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "The AWS CloudFormation template for this Serverless application",
+      "Resources": {
+        "AppLogGroup": {
+          "Type": "AWS::Logs::LogGroup",
+          "Properties": {
+            "LogGroupName": "/aws/lambda/dday-api-dev-app"
+          }
+        },
+        "IamRoleLambdaExecution": {
+          "Type": "AWS::IAM::Role",
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": [
+                      "lambda.amazonaws.com"
+                    ]
+                  },
+                  "Action": [
+                    "sts:AssumeRole"
+                  ]
+                }
+              ]
+            },
+            "Policies": [
+              {
+                "PolicyName": {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "dday-api",
+                      "dev",
+                      "lambda"
+                    ]
+                  ]
+                },
+                "PolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "logs:CreateLogStream",
+                        "logs:CreateLogGroup",
+                        "logs:TagResource"
+                      ],
+                      "Resource": [
+                        {
+                          "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/dday-api-dev*:*"
+                        }
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "logs:PutLogEvents"
+                      ],
+                      "Resource": [
+                        {
+                          "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/dday-api-dev*:*:*"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Path": "/",
+            "RoleName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "dday-api",
+                  "dev",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  "lambdaRole"
+                ]
+              ]
+            }
+          }
+        },
+        "AppLambdaFunction": {
+          "Type": "AWS::Lambda::Function",
+          "Properties": {
+            "Code": {
+              "S3Bucket": "serverless-framework-deployments-ap-northeast-2-43c8f9a3-0b47",
+              "S3Key": "serverless/dday-api/dev/1764573298274-2025-12-01T07:14:58.274Z/dday-api.zip"
+            },
+            "Handler": "dist/lambda.handler",
+            "Runtime": "nodejs22.x",
+            "FunctionName": "dday-api-dev-app",
+            "MemorySize": 256,
+            "Timeout": 30,
+            "Environment": {
+              "Variables": {
+                "MONGODB_URI": "process.env.MONGODB_URI || 'mongodb://localhost:27017/dday'",
+                "NODE_ENV": "development",
+                "JWT_SECRET": "<REDACTED>",
+                "GOOGLE_CLIENT_ID": "461637162830-0e4gsorqpempoho6blepn9h8p6m21832.apps.googleusercontent.com",
+                "GOOGLE_CLIENT_SECRET": "<REDACTED>",
+                "GOOGLE_IOS_CLIENT_ID": "461637162830-mh4rjrputda0342g1od9o3i98ncha1am.apps.googleusercontent.com",
+                "GOOGLE_CALLBACK_URL": "https://PLACEHOLDER/auth/google/callback",
+                "APPLE_CLIENT_ID": "com.graba.dday"
+              }
+            },
+            "Role": {
+              "Fn::GetAtt": [
+                "IamRoleLambdaExecution",
+                "Arn"
+              ]
+            }
+          },
+          "DependsOn": [
+            "AppLogGroup"
+          ]
+        },
+        "AppLambdaVersionwFu2IVyenX3Tr8UjbtSMwVwOsa9p95gbnNSJF9bLUU": {
+          "Type": "AWS::Lambda::Version",
+          "DeletionPolicy": "Retain",
+          "Properties": {
+            "FunctionName": {
+              "Ref": "AppLambdaFunction"
+            },
+            "CodeSha256": "wU6YfGdM0SN739lMKV0WiHhNH+9AJN6GUsK4RSieb2s="
+          }
+        },
+        "HttpApi": {
+          "Type": "AWS::ApiGatewayV2::Api",
+          "Properties": {
+            "Name": "dev-dday-api",
+            "ProtocolType": "HTTP",
+            "CorsConfiguration": {
+              "AllowHeaders": [
+                "Content-Type",
+                "X-Amz-Date",
+                "Authorization",
+                "X-Api-Key",
+                "X-Amz-Security-Token",
+                "X-Amz-User-Agent",
+                "X-Amzn-Trace-Id"
+              ],
+              "AllowMethods": [
+                "OPTIONS",
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "HEAD",
+                "DELETE"
+              ],
+              "AllowOrigins": [
+                "*"
+              ]
+            }
+          }
+        },
+        "HttpApiStage": {
+          "Type": "AWS::ApiGatewayV2::Stage",
+          "Properties": {
+            "ApiId": {
+              "Ref": "HttpApi"
+            },
+            "StageName": "$default",
+            "AutoDeploy": true,
+            "DefaultRouteSettings": {
+              "DetailedMetricsEnabled": false
+            }
+          }
+        },
+        "AppLambdaPermissionHttpApi": {
+          "Type": "AWS::Lambda::Permission",
+          "Properties": {
+            "FunctionName": {
+              "Fn::GetAtt": [
+                "AppLambdaFunction",
+                "Arn"
+              ]
+            },
+            "Action": "lambda:InvokeFunction",
+            "Principal": "apigateway.amazonaws.com",
+            "SourceArn": {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  ":execute-api:",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ":",
+                  {
+                    "Ref": "AWS::AccountId"
+                  },
+                  ":",
+                  {
+                    "Ref": "HttpApi"
+                  },
+                  "/*"
+                ]
+              ]
+            }
+          }
+        },
+        "HttpApiIntegrationApp": {
+          "Type": "AWS::ApiGatewayV2::Integration",
+          "Properties": {
+            "ApiId": {
+              "Ref": "HttpApi"
+            },
+            "IntegrationType": "AWS_PROXY",
+            "IntegrationUri": {
+              "Fn::GetAtt": [
+                "AppLambdaFunction",
+                "Arn"
+              ]
+            },
+            "PayloadFormatVersion": "2.0",
+            "TimeoutInMillis": 30000
+          }
+        },
+        "HttpApiRouteAnyProxyVar": {
+          "Type": "AWS::ApiGatewayV2::Route",
+          "Properties": {
+            "ApiId": {
+              "Ref": "HttpApi"
+            },
+            "RouteKey": "ANY /{proxy+}",
+            "Target": {
+              "Fn::Join": [
+                "/",
+                [
+                  "integrations",
+                  {
+                    "Ref": "HttpApiIntegrationApp"
+                  }
+                ]
+              ]
+            }
+          },
+          "DependsOn": "HttpApiIntegrationApp"
+        }
+      },
+      "Outputs": {
+        "ServerlessDeploymentBucketName": {
+          "Value": "serverless-framework-deployments-ap-northeast-2-43c8f9a3-0b47",
+          "Export": {
+            "Name": "sls-dday-api-dev-ServerlessDeploymentBucketName"
+          }
+        },
+        "AppLambdaFunctionQualifiedArn": {
+          "Description": "Current Lambda function version",
+          "Value": {
+            "Ref": "AppLambdaVersionwFu2IVyenX3Tr8UjbtSMwVwOsa9p95gbnNSJF9bLUU"
+          },
+          "Export": {
+            "Name": "sls-dday-api-dev-AppLambdaFunctionQualifiedArn"
+          }
+        },
+        "HttpApiId": {
+          "Description": "Id of the HTTP API",
+          "Value": {
+            "Ref": "HttpApi"
+          },
+          "Export": {
+            "Name": "sls-dday-api-dev-HttpApiId"
+          }
+        },
+        "HttpApiUrl": {
+          "Description": "URL of the HTTP API",
+          "Value": {
+            "Fn::Join": [
+              "",
+              [
+                "https://",
+                {
+                  "Ref": "HttpApi"
+                },
+                ".execute-api.",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ".",
+                {
+                  "Ref": "AWS::URLSuffix"
+                }
+              ]
+            ]
+          },
+          "Export": {
+            "Name": "sls-dday-api-dev-HttpApiUrl"
+          }
+        }
+      }
+    }
   }
 }
