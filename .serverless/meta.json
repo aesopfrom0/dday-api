@@ -19,7 +19,7 @@
           "GOOGLE_CLIENT_ID": "461637162830-0e4gsorqpempoho6blepn9h8p6m21832.apps.googleusercontent.com",
           "GOOGLE_CLIENT_SECRET": "<REDACTED>",
           "GOOGLE_IOS_CLIENT_ID": "461637162830-mh4rjrputda0342g1od9o3i98ncha1am.apps.googleusercontent.com",
-          "GOOGLE_CALLBACK_URL": "https://PLACEHOLDER/auth/google/callback",
+          "GOOGLE_CALLBACK_URL": "https://qwul1zxd01.execute-api.ap-northeast-2.amazonaws.com/auth/google/callback",
           "APPLE_CLIENT_ID": "com.graba.dday"
         },
         "httpApi": {
@@ -119,7 +119,7 @@
               "Properties": {
                 "Code": {
                   "S3Bucket": "serverless-framework-deployments-ap-northeast-2-43c8f9a3-0b47",
-                  "S3Key": "serverless/dday-api/dev/1764573298274-2025-12-01T07:14:58.274Z/dday-api.zip"
+                  "S3Key": "serverless/dday-api/dev/1764597767501-2025-12-01T14:02:47.501Z/dday-api.zip"
                 },
                 "Handler": "dist/lambda.handler",
                 "Runtime": "nodejs22.x",
@@ -134,7 +134,7 @@
                     "GOOGLE_CLIENT_ID": "461637162830-0e4gsorqpempoho6blepn9h8p6m21832.apps.googleusercontent.com",
                     "GOOGLE_CLIENT_SECRET": "<REDACTED>",
                     "GOOGLE_IOS_CLIENT_ID": "461637162830-mh4rjrputda0342g1od9o3i98ncha1am.apps.googleusercontent.com",
-                    "GOOGLE_CALLBACK_URL": "https://PLACEHOLDER/auth/google/callback",
+                    "GOOGLE_CALLBACK_URL": "https://qwul1zxd01.execute-api.ap-northeast-2.amazonaws.com/auth/google/callback",
                     "APPLE_CLIENT_ID": "com.graba.dday"
                   }
                 },
@@ -149,14 +149,14 @@
                 "AppLogGroup"
               ]
             },
-            "AppLambdaVersionwFu2IVyenX3Tr8UjbtSMwVwOsa9p95gbnNSJF9bLUU": {
+            "AppLambdaVersion5qYVu3FgAPQBGytdu35bjiQUYQq5KlKAPMtgvvZ0wU": {
               "Type": "AWS::Lambda::Version",
               "DeletionPolicy": "Retain",
               "Properties": {
                 "FunctionName": {
                   "Ref": "AppLambdaFunction"
                 },
-                "CodeSha256": "wU6YfGdM0SN739lMKV0WiHhNH+9AJN6GUsK4RSieb2s="
+                "CodeSha256": "ek3Req4XWpD8B8e6tDOcSzvvOUKk2BU7/XTZ9LrsIVE="
               }
             },
             "HttpApi": {
@@ -289,7 +289,7 @@
             "AppLambdaFunctionQualifiedArn": {
               "Description": "Current Lambda function version",
               "Value": {
-                "Ref": "AppLambdaVersionwFu2IVyenX3Tr8UjbtSMwVwOsa9p95gbnNSJF9bLUU"
+                "Ref": "AppLambdaVersion5qYVu3FgAPQBGytdu35bjiQUYQq5KlKAPMtgvvZ0wU"
               },
               "Export": {
                 "Name": "sls-dday-api-dev-AppLambdaFunctionQualifiedArn"
@@ -352,7 +352,7 @@
           "timeout": 30,
           "runtime": "nodejs22.x",
           "vpc": {},
-          "versionLogicalId": "AppLambdaVersionwFu2IVyenX3Tr8UjbtSMwVwOsa9p95gbnNSJF9bLUU"
+          "versionLogicalId": "AppLambdaVersion5qYVu3FgAPQBGytdu35bjiQUYQq5KlKAPMtgvvZ0wU"
         }
       },
       "plugins": [
@@ -406,7 +406,7 @@
         "GOOGLE_CLIENT_ID": "461637162830-0e4gsorqpempoho6blepn9h8p6m21832.apps.googleusercontent.com",
         "GOOGLE_CLIENT_SECRET": "<REDACTED>",
         "GOOGLE_IOS_CLIENT_ID": "461637162830-mh4rjrputda0342g1od9o3i98ncha1am.apps.googleusercontent.com",
-        "GOOGLE_CALLBACK_URL": "https://PLACEHOLDER/auth/google/callback",
+        "GOOGLE_CALLBACK_URL": "https://qwul1zxd01.execute-api.ap-northeast-2.amazonaws.com/auth/google/callback",
         "APPLE_CLIENT_ID": "com.graba.dday"
       },
       "httpApi": {
@@ -506,7 +506,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-ap-northeast-2-43c8f9a3-0b47",
-                "S3Key": "serverless/dday-api/dev/1764573298274-2025-12-01T07:14:58.274Z/dday-api.zip"
+                "S3Key": "serverless/dday-api/dev/1764597767501-2025-12-01T14:02:47.501Z/dday-api.zip"
               },
               "Handler": "dist/lambda.handler",
               "Runtime": "nodejs22.x",
@@ -521,7 +521,7 @@
                   "GOOGLE_CLIENT_ID": "461637162830-0e4gsorqpempoho6blepn9h8p6m21832.apps.googleusercontent.com",
                   "GOOGLE_CLIENT_SECRET": "<REDACTED>",
                   "GOOGLE_IOS_CLIENT_ID": "461637162830-mh4rjrputda0342g1od9o3i98ncha1am.apps.googleusercontent.com",
-                  "GOOGLE_CALLBACK_URL": "https://PLACEHOLDER/auth/google/callback",
+                  "GOOGLE_CALLBACK_URL": "https://qwul1zxd01.execute-api.ap-northeast-2.amazonaws.com/auth/google/callback",
                   "APPLE_CLIENT_ID": "com.graba.dday"
                 }
               },
@@ -536,14 +536,14 @@
               "AppLogGroup"
             ]
           },
-          "AppLambdaVersionwFu2IVyenX3Tr8UjbtSMwVwOsa9p95gbnNSJF9bLUU": {
+          "AppLambdaVersion5qYVu3FgAPQBGytdu35bjiQUYQq5KlKAPMtgvvZ0wU": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "AppLambdaFunction"
               },
-              "CodeSha256": "wU6YfGdM0SN739lMKV0WiHhNH+9AJN6GUsK4RSieb2s="
+              "CodeSha256": "ek3Req4XWpD8B8e6tDOcSzvvOUKk2BU7/XTZ9LrsIVE="
             }
           },
           "HttpApi": {
@@ -676,7 +676,7 @@
           "AppLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "AppLambdaVersionwFu2IVyenX3Tr8UjbtSMwVwOsa9p95gbnNSJF9bLUU"
+              "Ref": "AppLambdaVersion5qYVu3FgAPQBGytdu35bjiQUYQq5KlKAPMtgvvZ0wU"
             },
             "Export": {
               "Name": "sls-dday-api-dev-AppLambdaFunctionQualifiedArn"
@@ -745,12 +745,12 @@
     "serviceProviderAwsCfStackName": "dday-api-dev",
     "serviceProviderAwsCfStackId": "arn:aws:cloudformation:ap-northeast-2:308066567345:stack/dday-api-dev/02048160-ce84-11f0-9aad-02040ceca159",
     "serviceProviderAwsCfStackCreated": "2025-12-01T07:04:41.453Z",
-    "serviceProviderAwsCfStackUpdated": "2025-12-01T07:10:54.365Z",
+    "serviceProviderAwsCfStackUpdated": "2025-12-01T11:59:53.043Z",
     "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
     "serviceProviderAwsCfStackOutputs": [
       {
         "OutputKey": "AppLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:ap-northeast-2:308066567345:function:dday-api-dev-app:2",
+        "OutputValue": "arn:aws:lambda:ap-northeast-2:308066567345:function:dday-api-dev-app:4",
         "Description": "Current Lambda function version",
         "ExportName": "sls-dday-api-dev-AppLambdaFunctionQualifiedArn"
       },
@@ -865,7 +865,7 @@
           "Properties": {
             "Code": {
               "S3Bucket": "serverless-framework-deployments-ap-northeast-2-43c8f9a3-0b47",
-              "S3Key": "serverless/dday-api/dev/1764573298274-2025-12-01T07:14:58.274Z/dday-api.zip"
+              "S3Key": "serverless/dday-api/dev/1764597767501-2025-12-01T14:02:47.501Z/dday-api.zip"
             },
             "Handler": "dist/lambda.handler",
             "Runtime": "nodejs22.x",
@@ -880,7 +880,7 @@
                 "GOOGLE_CLIENT_ID": "461637162830-0e4gsorqpempoho6blepn9h8p6m21832.apps.googleusercontent.com",
                 "GOOGLE_CLIENT_SECRET": "<REDACTED>",
                 "GOOGLE_IOS_CLIENT_ID": "461637162830-mh4rjrputda0342g1od9o3i98ncha1am.apps.googleusercontent.com",
-                "GOOGLE_CALLBACK_URL": "https://PLACEHOLDER/auth/google/callback",
+                "GOOGLE_CALLBACK_URL": "https://qwul1zxd01.execute-api.ap-northeast-2.amazonaws.com/auth/google/callback",
                 "APPLE_CLIENT_ID": "com.graba.dday"
               }
             },
@@ -895,14 +895,14 @@
             "AppLogGroup"
           ]
         },
-        "AppLambdaVersionwFu2IVyenX3Tr8UjbtSMwVwOsa9p95gbnNSJF9bLUU": {
+        "AppLambdaVersion5qYVu3FgAPQBGytdu35bjiQUYQq5KlKAPMtgvvZ0wU": {
           "Type": "AWS::Lambda::Version",
           "DeletionPolicy": "Retain",
           "Properties": {
             "FunctionName": {
               "Ref": "AppLambdaFunction"
             },
-            "CodeSha256": "wU6YfGdM0SN739lMKV0WiHhNH+9AJN6GUsK4RSieb2s="
+            "CodeSha256": "ek3Req4XWpD8B8e6tDOcSzvvOUKk2BU7/XTZ9LrsIVE="
           }
         },
         "HttpApi": {
@@ -1034,7 +1034,7 @@
         "AppLambdaFunctionQualifiedArn": {
           "Description": "Current Lambda function version",
           "Value": {
-            "Ref": "AppLambdaVersionwFu2IVyenX3Tr8UjbtSMwVwOsa9p95gbnNSJF9bLUU"
+            "Ref": "AppLambdaVersion5qYVu3FgAPQBGytdu35bjiQUYQq5KlKAPMtgvvZ0wU"
           },
           "Export": {
             "Name": "sls-dday-api-dev-AppLambdaFunctionQualifiedArn"
