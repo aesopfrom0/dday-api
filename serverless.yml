@@ -1,4 +1,4 @@
-service: nestjs-template
+service: dday-api
 
 provider:
   name: aws
@@ -9,26 +9,17 @@ provider:
   timeout: 30
 
   environment:
-    DATABASE_URL: ${env:DATABASE_URL}
-    NODE_ENV: ${opt:stage, 'dev'}
+    MONGODB_URI: ${env:MONGODB_URI}
+    NODE_ENV: ${env:NODE_ENV}
+    JWT_SECRET: ${env:JWT_SECRET}
+    GOOGLE_CLIENT_ID: ${env:GOOGLE_CLIENT_ID}
+    GOOGLE_CLIENT_SECRET: ${env:GOOGLE_CLIENT_SECRET}
+    GOOGLE_IOS_CLIENT_ID: ${env:GOOGLE_IOS_CLIENT_ID}
+    GOOGLE_CALLBACK_URL: ${env:GOOGLE_CALLBACK_URL}
+    APPLE_CLIENT_ID: ${env:APPLE_CLIENT_ID}
 
   httpApi:
-    cors:
-      allowedOrigins:
-        - '*'
-      allowedHeaders:
-        - Content-Type
-        - Authorization
-        - X-Api-Key
-      allowedMethods:
-        - GET
-        - POST
-        - PUT
-        - DELETE
-        - PATCH
-        - OPTIONS
-      allowCredentials: true
-      maxAge: 86400
+    cors: true
 
 # package:
 #   exclude:
@@ -39,7 +30,7 @@ provider:
 #     - README.md
 #     - .env*
 #     - node_modules/@prisma/engines/**
-#     - node_modules/.prisma/**
+#     - node_mod극ules/.prisma/**
 
 functions:
   app:
@@ -54,7 +45,7 @@ plugins:
 
 custom:
   serverless-offline:
-    httpPort: 25000
+    httpPort: 25010
     noPrependStageInUrl: true
     useChildProcesses: true
     allowCache: true

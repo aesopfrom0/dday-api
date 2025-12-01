@@ -1,6 +1,6 @@
 {
-  "name": "nestjs-template-with-prisma",
-  "version": "0.0.1",
+  "name": "dday-api",
+  "version": "0.9.0",
   "description": "",
   "engines": {
     "node": ">=24.0.0"
@@ -14,9 +14,14 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "prebuild": "rimraf dist",
     "build": "nest build",
     "build:sls": "nest build && tsc --project tsconfig.build.json",
-    "sls:offline": "yarn build:sls && serverless offline",
+    "build:lambda:dev": "cross-env NODE_ENV=dev yarn build",
+    "build:lambda:prod": "cross-env NODE_ENV=prod yarn build",
+    "sls:offline": "yarn build:sls && env-cmd -f .env.local serverless offline",
+    "deploy:dev": "yarn build:lambda:dev && env-cmd -f .env.dev serverless deploy --stage dev",
+    "deploy:prod": "yarn build:lambda:prod && env-cmd -f .env.prod serverless deploy --stage prod",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:local": "yarn lint && cross-env env-cmd -f .env.local nest start --watch",
@@ -28,7 +33,11 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "logs:dev": "serverless logs -f app --stage dev",
+    "logs:prod": "serverless logs -f app --stage prod",
+    "logs:dev:tail": "serverless logs -f app --stage dev -t",
+    "logs:prod:tail": "serverless logs -f app --stage prod -t"
   },
   "dependencies": {
     "@codegenie/serverless-express": "^4.17.0",
@@ -76,6 +85,7 @@
     "eslint-plugin-prettier": "^5.5.4",
     "jest": "^30.2.0",
     "prettier": "^3.6.2",
+    "rimraf": "^6.1.2",
     "serverless": "^4.22.0",
     "serverless-offline": "^14.4.0",
     "source-map-support": "^0.5.21",

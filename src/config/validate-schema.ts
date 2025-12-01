@@ -8,7 +8,7 @@ import { Environment } from 'src/common/constant/environment';
 export function validateSchema() {
   return Joi.object({
     NODE_ENV: Joi.string().valid(...Object.values(Environment)),
-    PORT: Joi.number().required(),
+    PORT: Joi.number().default(5010),
     ALLOWED_CORS_ORIGIN: Joi.string(),
     MONGODB_URI: Joi.string().required(),
     JWT_SECRET: Joi.string().required(),
