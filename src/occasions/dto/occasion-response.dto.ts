@@ -85,6 +85,9 @@ export class OccasionResponseDto {
   baseDate: string;
 
   @Expose()
+  solarBaseDate?: string;
+
+  @Expose()
   calendarType: 'solar' | 'lunar';
 
   @Expose()

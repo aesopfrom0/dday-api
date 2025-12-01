@@ -60,6 +60,7 @@
     "env-cmd": "^11.0.0",
     "google-auth-library": "^10.5.0",
     "joi": "^18.0.1",
+    "korean-lunar-calendar": "^0.3.6",
     "mongoose": "^8.10.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",

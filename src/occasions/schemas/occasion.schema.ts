@@ -24,6 +24,16 @@ export class Occasion {
   @Prop({ required: true, type: String })
   baseDate: string;
 
+  // 양력 기준 날짜 (음력인 경우에만 사용)
+  // 형식: "YYYY-MM-DD" (예: "1997-01-06")
+  // - 양력인 경우: undefined 또는 null
+  // - 음력인 경우: baseDate를 양력으로 변환한 날짜
+  //
+  // 예: 음력 1996-11-27 → 양력 1997-01-06
+  // 이 값이 있으면 경과 일수 계산 및 마일스톤 생성에 이 값을 사용
+  @Prop({ type: String, required: false })
+  solarBaseDate?: string;
+
   @Prop({ required: true, enum: ['solar', 'lunar'], default: 'solar' })
   calendarType: 'solar' | 'lunar';
 

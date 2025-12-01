@@ -122,6 +122,15 @@ export class CreateOccasionDto {
   @IsReasonableDateRange()
   baseDate: string;
 
+  // 양력 기준 날짜 (음력인 경우에만 필요)
+  // "YYYY-MM-DD" 형식 (ISO 8601 날짜 전용)
+  // 예: "1997-01-06" (음력 1996-11-27의 양력 변환)
+  @IsOptional()
+  @IsString()
+  @IsDateString()
+  @IsReasonableDateRange()
+  solarBaseDate?: string;
+
   @IsEnum(['solar', 'lunar'])
   calendarType: 'solar' | 'lunar';
 
