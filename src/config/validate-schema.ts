@@ -19,5 +19,7 @@ export function validateSchema() {
     GOOGLE_IOS_CLIENT_ID: Joi.string().required(),
     GOOGLE_CALLBACK_URL: Joi.string().required(),
     APPLE_CLIENT_ID: Joi.string().required(),
+    FREE_MAX_PINNED_OCCASIONS: Joi.number().integer().min(0),
+    FREE_MAX_MILESTONES_PER_OCCASION: Joi.number().integer().min(0),
   });
 }

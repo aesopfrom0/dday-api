@@ -3,8 +3,11 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Occasion, OccasionDocument } from './schemas/occasion.schema';
@@ -19,6 +22,7 @@ export class OccasionsService {
   constructor(
     @InjectModel(Occasion.name) private occasionModel: Model<OccasionDocument>,
     private usersService: UsersService,
+    private configService: ConfigService,
   ) {}
 
   async create(userId: string, createOccasionDto: CreateOccasionDto): Promise<OccasionDocument> {
@@ -189,12 +193,15 @@ export class OccasionsService {
         isPinned: true,
       });
 
-      if (!user.subscription.isPremium && pinnedCount >= 1) {
+      const maxPins = this.configService.get<number>('limits.free.maxPinnedOccasions');
+
+      if (!user.subscription.isPremium && pinnedCount >= maxPins) {
         this.logger.warn(
-          `[${this.togglePin.name}] 무료 사용자 Pin 제한 초과 - userId: ${userId}, current: ${pinnedCount}`,
+          `[${this.togglePin.name}] 무료 사용자 Pin 제한 초과 - userId: ${userId}, current: ${pinnedCount}, max: ${maxPins}`,
         );
-        throw new BadRequestException(
-          'Free users can only pin 1 occasion. Upgrade to premium for unlimited.',
+        throw new HttpException(
+          `Free users can only pin up to ${maxPins} occasions. Upgrade to premium for unlimited.`,
+          HttpStatus.PAYMENT_REQUIRED,
         );
       }
     }
@@ -246,14 +253,16 @@ export class OccasionsService {
     }
 
     const user = await this.usersService.findById(userId);
+    const maxMilestones = this.configService.get<number>('limits.free.maxMilestonesPerOccasion');
 
-    // 프리미엄이 아니면 3개까지만
-    if (!user.subscription.isPremium && occasion.milestones.length >= 3) {
+    // 프리미엄이 아니면 설정값까지만
+    if (!user.subscription.isPremium && occasion.milestones.length >= maxMilestones) {
       this.logger.warn(
-        `[${this.addMilestone.name}] 무료 사용자 마일스톤 제한 초과 - userId: ${userId}, current: ${occasion.milestones.length}`,
+        `[${this.addMilestone.name}] 무료 사용자 마일스톤 제한 초과 - userId: ${userId}, current: ${occasion.milestones.length}, max: ${maxMilestones}`,
       );
-      throw new BadRequestException(
-        'Free users can only add up to 3 milestones. Upgrade to premium for unlimited.',
+      throw new HttpException(
+        `Free users can only add up to ${maxMilestones} milestones per occasion. Upgrade to premium for unlimited.`,
+        HttpStatus.PAYMENT_REQUIRED,
       );
     }
 

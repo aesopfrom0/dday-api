@@ -23,4 +23,14 @@ export default () => ({
     accessTokenExpiration: process.env.JWT_ACCESS_TOKEN_EXPIRATION || '3h',
     refreshTokenExpiration: process.env.JWT_REFRESH_TOKEN_EXPIRATION || '60d',
   },
+  limits: {
+    free: {
+      maxPinnedOccasions: +(process.env.FREE_MAX_PINNED_OCCASIONS || 5),
+      maxMilestonesPerOccasion: +(process.env.FREE_MAX_MILESTONES_PER_OCCASION || 5),
+    },
+    premium: {
+      maxPinnedOccasions: -1, // unlimited
+      maxMilestonesPerOccasion: -1, // unlimited
+    },
+  },
 });
