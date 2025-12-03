@@ -31,14 +31,17 @@ export class AuthService {
       authProvider: user.authProvider,
     };
 
+    const accessTokenExpiration = this.configService.get('jwt.accessTokenExpiration') || '3h';
+    const refreshTokenExpiration = this.configService.get('jwt.refreshTokenExpiration') || '60d';
+
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: '3h', // 개발 편의성과 보안 균형 (3시간)
+      expiresIn: accessTokenExpiration,
     });
 
     const refreshToken = this.jwtService.sign(
       { sub: user._id.toString() },
       {
-        expiresIn: '60d', // Rolling Refresh Token: 사용할 때마다 갱신
+        expiresIn: refreshTokenExpiration,
       },
     );
 
@@ -225,6 +228,9 @@ export class AuthService {
       const payload = this.jwtService.verify(refreshToken);
       const user = await this.usersService.findById(payload.sub);
 
+      const accessTokenExpiration = this.configService.get('jwt.accessTokenExpiration') || '3h';
+      const refreshTokenExpiration = this.configService.get('jwt.refreshTokenExpiration') || '60d';
+
       const newAccessToken = this.jwtService.sign(
         {
           sub: user._id.toString(),
@@ -232,7 +238,7 @@ export class AuthService {
           authProvider: user.authProvider,
         } as JwtPayload,
         {
-          expiresIn: '3h', // 개발 편의성과 보안 균형 (3시간)
+          expiresIn: accessTokenExpiration,
         },
       );
 
@@ -240,7 +246,7 @@ export class AuthService {
       const newRefreshToken = this.jwtService.sign(
         { sub: user._id.toString() },
         {
-          expiresIn: '60d', // 사용할 때마다 60일로 리셋
+          expiresIn: refreshTokenExpiration,
         },
       );
 

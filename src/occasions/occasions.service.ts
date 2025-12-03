@@ -68,12 +68,17 @@ export class OccasionsService {
       query.category = category;
     }
 
-    // 정렬 순서: 1) isPinned (true 먼저), 2) nextMilestoneDate (빠른 순), 3) baseDate (최근 먼저)
+    // 정렬 순서:
+    // 1) isPinned (true 먼저)
+    // 2) pinnedAt (Pin된 것끼리는 오래된 순)
+    // 3) nextMilestoneDate (일반 항목은 D-Day 가까운 순)
+    // 4) baseDate (폴백: 최근 먼저)
     const occasions = await this.occasionModel
       .find(query)
       .sort({
         isPinned: -1, // true가 먼저
-        nextMilestoneDate: 1, // 오름차순 (null은 뒤로)
+        pinnedAt: 1, // 오름차순 (먼저 Pin한 게 위로, null은 뒤로)
+        nextMilestoneDate: 1, // 오름차순 (가까운 날짜가 먼저, null은 뒤로)
         baseDate: -1, // 내림차순 (최근 먼저)
       })
       .exec();
@@ -126,6 +131,15 @@ export class OccasionsService {
 
     // Mongoose set 메서드로 중첩 객체 안전하게 병합
     occasion.set(updateOccasionDto);
+
+    // milestones나 excludedMilestones가 변경되면 캐시 업데이트
+    if (
+      updateOccasionDto.milestones !== undefined ||
+      updateOccasionDto.excludedMilestones !== undefined
+    ) {
+      this.updateNextMilestoneCache(occasion);
+    }
+
     const updated = await occasion.save();
 
     this.logger.log(`[${this.update.name}] 기념일 수정 완료 - occasionId: ${occasionId}`);
@@ -186,10 +200,11 @@ export class OccasionsService {
     }
 
     occasion.isPinned = !occasion.isPinned;
+    occasion.pinnedAt = occasion.isPinned ? new Date() : null;
     const saved = await occasion.save();
 
     this.logger.log(
-      `[${this.togglePin.name}] Pin 토글 완료 - occasionId: ${occasionId}, isPinned: ${saved.isPinned}`,
+      `[${this.togglePin.name}] Pin 토글 완료 - occasionId: ${occasionId}, isPinned: ${saved.isPinned}, pinnedAt: ${saved.pinnedAt}`,
     );
     return saved;
   }
@@ -287,6 +302,64 @@ export class OccasionsService {
 
     this.logger.log(
       `[${this.removeMilestone.name}] 마일스톤 삭제 완료 - occasionId: ${occasionId}, 삭제된 마일스톤: ${removedMilestone.name}, 남은 개수: ${saved.milestones.length}`,
+    );
+    return saved;
+  }
+
+  async updateMilestone(
+    userId: string,
+    occasionId: string,
+    milestoneId: string,
+    updateData: {
+      name?: string;
+      targetDate?: string;
+      description?: string;
+    },
+  ): Promise<OccasionDocument> {
+    this.logger.log(
+      `[${this.updateMilestone.name}] 마일스톤 수정 시작 - userId: ${userId}, occasionId: ${occasionId}, milestoneId: ${milestoneId}`,
+    );
+
+    const occasion = await this.occasionModel.findById(occasionId).exec();
+
+    if (!occasion) {
+      throw new NotFoundException('Occasion not found');
+    }
+
+    if (occasion.userId.toString() !== userId) {
+      throw new ForbiddenException('You do not have permission to access this occasion');
+    }
+
+    const milestoneIndex = occasion.milestones.findIndex((m) => m.id === milestoneId);
+
+    if (milestoneIndex === -1) {
+      this.logger.warn(
+        `[${this.updateMilestone.name}] 마일스톤을 찾을 수 없음 - milestoneId: ${milestoneId}`,
+      );
+      throw new NotFoundException('Milestone not found');
+    }
+
+    // 마일스톤 업데이트
+    const milestone = occasion.milestones[milestoneIndex];
+    if (updateData.name !== undefined) {
+      milestone.name = updateData.name;
+    }
+    if (updateData.targetDate !== undefined) {
+      milestone.targetDate = updateData.targetDate;
+    }
+    if (updateData.description !== undefined) {
+      milestone.description = updateData.description;
+    }
+
+    // targetDate가 변경되면 캐시 업데이트
+    if (updateData.targetDate !== undefined) {
+      this.updateNextMilestoneCache(occasion);
+    }
+
+    const saved = await occasion.save();
+
+    this.logger.log(
+      `[${this.updateMilestone.name}] 마일스톤 수정 완료 - occasionId: ${occasionId}, milestoneId: ${milestoneId}, 새 이름: ${milestone.name}`,
     );
     return saved;
   }

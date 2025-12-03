@@ -12,6 +12,8 @@ export function validateSchema() {
     ALLOWED_CORS_ORIGIN: Joi.string(),
     MONGODB_URI: Joi.string().required(),
     JWT_SECRET: Joi.string().required(),
+    JWT_ACCESS_TOKEN_EXPIRATION: Joi.string(),
+    JWT_REFRESH_TOKEN_EXPIRATION: Joi.string(),
     GOOGLE_CLIENT_ID: Joi.string().required(),
     GOOGLE_CLIENT_SECRET: Joi.string().required(),
     GOOGLE_IOS_CLIENT_ID: Joi.string().required(),

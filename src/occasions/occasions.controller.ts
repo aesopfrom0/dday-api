@@ -109,6 +109,27 @@ export class OccasionsController {
     return this.occasionsService.removeMilestone(user.userId, id, milestoneId);
   }
 
+  @Put(':id/milestones/:milestoneId')
+  async updateMilestone(
+    @CurrentUser() user: CurrentUserData,
+    @Param('id') id: string,
+    @Param('milestoneId') milestoneId: string,
+    @Body()
+    updateData: {
+      name?: string;
+      targetDate?: string;
+      description?: string;
+    },
+  ) {
+    const occasion = await this.occasionsService.updateMilestone(
+      user.userId,
+      id,
+      milestoneId,
+      updateData,
+    );
+    return this.toResponseDto(occasion);
+  }
+
   @Patch(':id/pin')
   async togglePin(@CurrentUser() user: CurrentUserData, @Param('id') id: string) {
     const occasion = await this.occasionsService.togglePin(user.userId, id);

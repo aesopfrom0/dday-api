@@ -174,6 +174,9 @@ export class Occasion {
   @Prop({ default: false })
   isPinned: boolean;
 
+  @Prop({ type: Date, required: false })
+  pinnedAt?: Date; // Pin한 시각 (Pin 해제 시 null)
+
   @Prop({ type: String })
   nextMilestoneDate?: string; // 가장 가까운 upcoming 마일스톤 캐시 (YYYY-MM-DD)
 }
@@ -186,4 +189,4 @@ OccasionSchema.plugin(idTransformPlugin);
 // 인덱스 설정
 OccasionSchema.index({ userId: 1, baseDate: -1 });
 OccasionSchema.index({ userId: 1, category: 1 });
-OccasionSchema.index({ userId: 1, isPinned: -1, nextMilestoneDate: 1, baseDate: -1 }); // 정렬용 복합 인덱스
+OccasionSchema.index({ userId: 1, isPinned: -1, pinnedAt: 1, nextMilestoneDate: 1, baseDate: -1 }); // 정렬용 복합 인덱스

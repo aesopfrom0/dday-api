@@ -119,6 +119,9 @@ export class OccasionResponseDto {
   isPinned: boolean;
 
   @Expose()
+  pinnedAt?: Date;
+
+  @Expose()
   nextMilestoneDate?: string;
 
   @Expose()
