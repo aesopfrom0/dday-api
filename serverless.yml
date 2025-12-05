@@ -17,6 +17,9 @@ provider:
     GOOGLE_IOS_CLIENT_ID: ${env:GOOGLE_IOS_CLIENT_ID}
     GOOGLE_CALLBACK_URL: ${env:GOOGLE_CALLBACK_URL}
     APPLE_CLIENT_ID: ${env:APPLE_CLIENT_ID}
+    FIREBASE_PROJECT_ID: ${env:FIREBASE_PROJECT_ID}
+    FIREBASE_CLIENT_EMAIL: ${env:FIREBASE_CLIENT_EMAIL}
+    FIREBASE_PRIVATE_KEY: ${env:FIREBASE_PRIVATE_KEY}
 
   httpApi:
     cors: true
@@ -39,6 +42,16 @@ functions:
       - httpApi:
           path: /{proxy+}
           method: any
+
+  notificationCron:
+    handler: dist/cron-handler.handler
+    timeout: 300
+    memorySize: 512
+    events:
+      - schedule:
+          rate: cron(37 * * * ? *)
+          enabled: true
+          description: "Send hourly push notifications to users"
 
 plugins:
   - serverless-offline

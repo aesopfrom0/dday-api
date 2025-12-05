@@ -63,6 +63,12 @@ export class User {
     isPremium: boolean;
     expiresAt?: Date;
   };
+
+  @Prop({ type: String, required: true, default: 'Asia/Seoul' })
+  timezone: string; // IANA timezone (예: 'Asia/Seoul', 'America/New_York')
+
+  @Prop({ type: [String], default: [] })
+  fcmTokens: string[]; // FCM 토큰 배열 (멀티 디바이스 지원)
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

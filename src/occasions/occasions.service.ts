@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
-  BadRequestException,
   HttpException,
   HttpStatus,
   Logger,
@@ -14,6 +13,7 @@ import { Occasion, OccasionDocument } from './schemas/occasion.schema';
 import { CreateOccasionDto } from './dto/create-occasion.dto';
 import { UpdateOccasionDto } from './dto/update-occasion.dto';
 import { UsersService } from '../users/users.service';
+import { NotificationQueueService } from '../notifications/notification-queue.service';
 
 @Injectable()
 export class OccasionsService {
@@ -23,6 +23,7 @@ export class OccasionsService {
     @InjectModel(Occasion.name) private occasionModel: Model<OccasionDocument>,
     private usersService: UsersService,
     private configService: ConfigService,
+    private notificationQueueService: NotificationQueueService,
   ) {}
 
   async create(userId: string, createOccasionDto: CreateOccasionDto): Promise<OccasionDocument> {
@@ -57,6 +58,12 @@ export class OccasionsService {
 
     const saved = await occasion.save();
     this.logger.log(`[${this.create.name}] 기념일 생성 완료 - occasionId: ${saved.id}`);
+
+    // 알림 활성화 시 알림 큐 생성
+    if (saved.isNotificationEnabled) {
+      const user = await this.usersService.findById(userId);
+      await this.notificationQueueService.scheduleNotifications(saved, user);
+    }
 
     return saved;
   }
@@ -133,6 +140,9 @@ export class OccasionsService {
       throw new ForbiddenException('You do not have permission to access this occasion');
     }
 
+    // 기존 알림 삭제 (pending만)
+    await this.notificationQueueService.deleteByOccasionId(occasionId);
+
     // Mongoose set 메서드로 중첩 객체 안전하게 병합
     occasion.set(updateOccasionDto);
 
@@ -145,6 +155,12 @@ export class OccasionsService {
     }
 
     const updated = await occasion.save();
+
+    // 알림 활성화 시 재생성
+    if (updated.isNotificationEnabled) {
+      const user = await this.usersService.findById(userId);
+      await this.notificationQueueService.scheduleNotifications(updated, user);
+    }
 
     this.logger.log(`[${this.update.name}] 기념일 수정 완료 - occasionId: ${occasionId}`);
     return updated;
@@ -164,6 +180,9 @@ export class OccasionsService {
     if (occasion.userId.toString() !== userId) {
       throw new ForbiddenException('You do not have permission to access this occasion');
     }
+
+    // 알림 먼저 삭제
+    await this.notificationQueueService.deleteByOccasionId(occasionId);
 
     await occasion.deleteOne();
 
@@ -577,5 +596,62 @@ export class OccasionsService {
         },
       }
     );
+  }
+
+  /**
+   * 테스트 알림 발송 (개발/테스트용)
+   */
+  async sendTestNotification(userId: string, occasionId: string) {
+    const occasion = await this.occasionModel.findById(occasionId).exec();
+
+    if (!occasion) {
+      throw new NotFoundException('Occasion not found');
+    }
+
+    if (occasion.userId.toString() !== userId) {
+      throw new ForbiddenException('You do not have permission to access this occasion');
+    }
+
+    const user = await this.usersService.findById(userId);
+
+    if (!user.fcmTokens || user.fcmTokens.length === 0) {
+      throw new HttpException('No FCM tokens registered', HttpStatus.BAD_REQUEST);
+    }
+
+    // Firebase Admin으로 즉시 알림 발송
+    const admin = await import('firebase-admin');
+
+    try {
+      const response = await admin.default.messaging().sendEachForMulticast({
+        tokens: user.fcmTokens,
+        notification: {
+          title: `🔔 ${occasion.name}`,
+          body: '테스트 알림입니다! 푸시 알림이 정상적으로 작동하고 있습니다.',
+        },
+        data: {
+          occasionId: occasion.id,
+          occasionDate: occasion.baseDate,
+          type: 'test',
+        },
+      });
+
+      this.logger.log(
+        `[${this.sendTestNotification.name}] Test notification sent - success: ${response.successCount}, fail: ${response.failureCount}`,
+      );
+
+      return {
+        success: true,
+        message: 'Test notification sent',
+        tokensCount: user.fcmTokens.length,
+        successCount: response.successCount,
+        failureCount: response.failureCount,
+      };
+    } catch (error) {
+      this.logger.error(`[${this.sendTestNotification.name}] Failed to send notification: ${error.message}`);
+      throw new HttpException(
+        `Failed to send notification: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

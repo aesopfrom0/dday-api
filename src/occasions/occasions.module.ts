@@ -4,11 +4,13 @@ import { OccasionsController } from './occasions.controller';
 import { OccasionsService } from './occasions.service';
 import { Occasion, OccasionSchema } from './schemas/occasion.schema';
 import { UsersModule } from '../users/users.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Occasion.name, schema: OccasionSchema }]),
     UsersModule,
+    NotificationsModule,
   ],
   controllers: [OccasionsController],
   providers: [OccasionsService],

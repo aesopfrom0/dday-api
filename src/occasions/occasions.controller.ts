@@ -135,4 +135,9 @@ export class OccasionsController {
     const occasion = await this.occasionsService.togglePin(user.userId, id);
     return this.toResponseDto(occasion);
   }
+
+  @Post(':id/test-notification')
+  async testNotification(@CurrentUser() user: CurrentUserData, @Param('id') id: string) {
+    return this.occasionsService.sendTestNotification(user.userId, id);
+  }
 }

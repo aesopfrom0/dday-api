@@ -62,4 +62,56 @@ export class UsersService {
     const user = await this.findById(userId);
     return user.settings;
   }
+
+  /**
+   * FCM 토큰 등록 (멀티 디바이스 지원)
+   */
+  async registerFcmToken(userId: string, token: string): Promise<UserDocument> {
+    const user = await this.userModel.findByIdAndUpdate(
+      userId,
+      { $addToSet: { fcmTokens: token } }, // 중복 방지
+      { new: true },
+    );
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  /**
+   * FCM 토큰 제거
+   */
+  async removeFcmToken(userId: string, token: string): Promise<UserDocument> {
+    const user = await this.userModel.findByIdAndUpdate(
+      userId,
+      { $pull: { fcmTokens: token } },
+      { new: true },
+    );
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  /**
+   * 타임존 업데이트
+   */
+  async updateTimezone(userId: string, timezone: string): Promise<UserDocument> {
+    // TODO: Luxon으로 타임존 유효성 검증
+    const user = await this.userModel.findByIdAndUpdate(userId, { timezone }, { new: true });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // TODO: 기존 pending 알림 재스케줄링
+    // NotificationQueueService 주입 후
+    // await this.notificationQueueService.rescheduleForUser(userId, timezone);
+
+    return user;
+  }
 }

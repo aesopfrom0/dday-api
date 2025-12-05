@@ -21,5 +21,8 @@ export function validateSchema() {
     APPLE_CLIENT_ID: Joi.string().required(),
     FREE_MAX_PINNED_OCCASIONS: Joi.number().integer().min(0),
     FREE_MAX_MILESTONES_PER_OCCASION: Joi.number().integer().min(0),
+    FIREBASE_PROJECT_ID: Joi.string().optional(),
+    FIREBASE_CLIENT_EMAIL: Joi.string().optional(),
+    FIREBASE_PRIVATE_KEY: Joi.string().optional(),
   });
 }
