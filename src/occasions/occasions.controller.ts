@@ -97,7 +97,8 @@ export class OccasionsController {
       suggestionValue?: number;
     },
   ) {
-    return this.occasionsService.addMilestone(user.userId, id, milestone);
+    const occasion = await this.occasionsService.addMilestone(user.userId, id, milestone);
+    return this.toResponseDto(occasion);
   }
 
   @Delete(':id/milestones/:milestoneId')
@@ -106,7 +107,8 @@ export class OccasionsController {
     @Param('id') id: string,
     @Param('milestoneId') milestoneId: string,
   ) {
-    return this.occasionsService.removeMilestone(user.userId, id, milestoneId);
+    const occasion = await this.occasionsService.removeMilestone(user.userId, id, milestoneId);
+    return this.toResponseDto(occasion);
   }
 
   @Put(':id/milestones/:milestoneId')

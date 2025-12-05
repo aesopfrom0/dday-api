@@ -609,7 +609,9 @@ export class OccasionsService {
     const occasion = await this.occasionModel.findById(occasionId).exec();
 
     if (!occasion) {
-      this.logger.debug(`[${this.sendTestNotification.name}] 기념일을 찾을 수 없음 - occasionId: ${occasionId}`);
+      this.logger.debug(
+        `[${this.sendTestNotification.name}] 기념일을 찾을 수 없음 - occasionId: ${occasionId}`,
+      );
       throw new NotFoundException('Occasion not found');
     }
 
@@ -665,7 +667,11 @@ export class OccasionsService {
 
       if (response.failureCount > 0) {
         this.logger.warn(
-          `[${this.sendTestNotification.name}] 일부 알림 발송 실패:\n${JSON.stringify(response.responses.filter((r) => !r.success).map((r) => r.error), null, 2)}`,
+          `[${this.sendTestNotification.name}] 일부 알림 발송 실패:\n${JSON.stringify(
+            response.responses.filter((r) => !r.success).map((r) => r.error),
+            null,
+            2,
+          )}`,
         );
       }
 
