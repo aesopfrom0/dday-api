@@ -602,42 +602,72 @@ export class OccasionsService {
    * 테스트 알림 발송 (개발/테스트용)
    */
   async sendTestNotification(userId: string, occasionId: string) {
+    this.logger.debug(
+      `[${this.sendTestNotification.name}] 테스트 알림 발송 시작 - userId: ${userId}, occasionId: ${occasionId}`,
+    );
+
     const occasion = await this.occasionModel.findById(occasionId).exec();
 
     if (!occasion) {
+      this.logger.debug(`[${this.sendTestNotification.name}] 기념일을 찾을 수 없음 - occasionId: ${occasionId}`);
       throw new NotFoundException('Occasion not found');
     }
 
     if (occasion.userId.toString() !== userId) {
+      this.logger.warn(
+        `[${this.sendTestNotification.name}] 권한 없음 - userId: ${userId}, occasionId: ${occasionId}`,
+      );
       throw new ForbiddenException('You do not have permission to access this occasion');
     }
 
+    this.logger.debug(
+      `[${this.sendTestNotification.name}] 기념일 조회 완료 - name: ${occasion.name}, baseDate: ${occasion.baseDate}`,
+    );
+
     const user = await this.usersService.findById(userId);
+    this.logger.debug(
+      `[${this.sendTestNotification.name}] 사용자 조회 완료 - FCM 토큰 개수: ${user.fcmTokens?.length || 0}`,
+    );
 
     if (!user.fcmTokens || user.fcmTokens.length === 0) {
+      this.logger.warn(`[${this.sendTestNotification.name}] FCM 토큰 없음 - userId: ${userId}`);
       throw new HttpException('No FCM tokens registered', HttpStatus.BAD_REQUEST);
     }
 
     // Firebase Admin으로 즉시 알림 발송
+    this.logger.debug(`[${this.sendTestNotification.name}] Firebase Admin 모듈 로드 중...`);
     const admin = await import('firebase-admin');
 
+    const notificationPayload = {
+      tokens: user.fcmTokens,
+      notification: {
+        title: `🔔 ${occasion.name}`,
+        body: '테스트 알림입니다! 푸시 알림이 정상적으로 작동하고 있습니다.',
+      },
+      data: {
+        occasionId: occasion.id,
+        occasionDate: occasion.baseDate,
+        type: 'test',
+      },
+    };
+
+    this.logger.debug(
+      `[${this.sendTestNotification.name}] 알림 페이로드 준비 완료:\n${JSON.stringify(notificationPayload, null, 2)}`,
+    );
+
     try {
-      const response = await admin.default.messaging().sendEachForMulticast({
-        tokens: user.fcmTokens,
-        notification: {
-          title: `🔔 ${occasion.name}`,
-          body: '테스트 알림입니다! 푸시 알림이 정상적으로 작동하고 있습니다.',
-        },
-        data: {
-          occasionId: occasion.id,
-          occasionDate: occasion.baseDate,
-          type: 'test',
-        },
-      });
+      this.logger.debug(`[${this.sendTestNotification.name}] Firebase 알림 발송 중...`);
+      const response = await admin.default.messaging().sendEachForMulticast(notificationPayload);
 
       this.logger.log(
-        `[${this.sendTestNotification.name}] Test notification sent - success: ${response.successCount}, fail: ${response.failureCount}`,
+        `[${this.sendTestNotification.name}] 테스트 알림 발송 완료 - success: ${response.successCount}, fail: ${response.failureCount}`,
       );
+
+      if (response.failureCount > 0) {
+        this.logger.warn(
+          `[${this.sendTestNotification.name}] 일부 알림 발송 실패:\n${JSON.stringify(response.responses.filter((r) => !r.success).map((r) => r.error), null, 2)}`,
+        );
+      }
 
       return {
         success: true,
@@ -647,7 +677,9 @@ export class OccasionsService {
         failureCount: response.failureCount,
       };
     } catch (error) {
-      this.logger.error(`[${this.sendTestNotification.name}] Failed to send notification: ${error.message}`);
+      this.logger.error(
+        `[${this.sendTestNotification.name}] 알림 발송 실패 - error: ${error.message}\nstack: ${error.stack}`,
+      );
       throw new HttpException(
         `Failed to send notification: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
