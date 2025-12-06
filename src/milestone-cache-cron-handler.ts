@@ -1,10 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { OccasionsService } from './occasions/occasions.service';
 import { Handler } from 'aws-lambda';
-import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Occasion, OccasionDocument } from './occasions/schemas/occasion.schema';
+import { OccasionDocument } from './occasions/schemas/occasion.schema';
 
 /**
  * Lambda 함수: nextMilestoneDate 캐시 갱신 크론
