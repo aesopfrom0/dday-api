@@ -73,32 +73,54 @@ export class OccasionsService {
       `[${this.findAll.name}] 기념일 목록 조회 - userId: ${userId}, category: ${category || 'all'}`,
     );
 
-    const query: any = {
+    const matchStage: any = {
       userId: new Types.ObjectId(userId),
       isArchived: false, // 아카이브되지 않은 것만
     };
 
     if (category) {
-      query.category = category;
+      matchStage.category = category;
     }
 
+    // Aggregation Pipeline으로 null 값을 맨 뒤로 보내기
     // 정렬 순서:
     // 1) isPinned (true 먼저)
-    // 2) pinnedAt (Pin된 것끼리는 오래된 순)
-    // 3) nextMilestoneDate (일반 항목은 D-Day 가까운 순)
+    // 2) pinnedAt (Pin된 것끼리는 오래된 순, null은 뒤로)
+    // 3) nextMilestoneDate (일반 항목은 D-Day 가까운 순, null은 맨 뒤로)
     // 4) baseDate (폴백: 최근 먼저)
-    const occasions = await this.occasionModel
-      .find(query)
-      .sort({
-        isPinned: -1, // true가 먼저
-        pinnedAt: 1, // 오름차순 (먼저 Pin한 게 위로, null은 뒤로)
-        nextMilestoneDate: 1, // 오름차순 (가까운 날짜가 먼저, null은 뒤로)
-        baseDate: -1, // 내림차순 (최근 먼저)
-      })
-      .exec();
+    const occasions = await this.occasionModel.aggregate([
+      { $match: matchStage },
+      {
+        $addFields: {
+          // null인 경우 9999-12-31로 치환하여 정렬 시 맨 뒤로
+          sortNextMilestoneDate: {
+            $ifNull: ['$nextMilestoneDate', '9999-12-31'],
+          },
+          // pinnedAt도 null 처리 (Pin되지 않은 항목은 뒤로)
+          sortPinnedAt: {
+            $ifNull: ['$pinnedAt', new Date('9999-12-31')],
+          },
+        },
+      },
+      {
+        $sort: {
+          isPinned: -1, // true가 먼저
+          sortPinnedAt: 1, // 오름차순 (먼저 Pin한 게 위로)
+          sortNextMilestoneDate: 1, // 오름차순 (가까운 날짜가 먼저, null은 뒤로)
+          baseDate: -1, // 내림차순 (최근 먼저)
+        },
+      },
+      {
+        $project: {
+          sortNextMilestoneDate: 0, // 임시 필드 제거
+          sortPinnedAt: 0, // 임시 필드 제거
+        },
+      },
+    ]);
+
     this.logger.debug(`[${this.findAll.name}] 조회 완료 - 총 ${occasions.length}개`);
 
-    return occasions;
+    return occasions as OccasionDocument[];
   }
 
   async findOne(userId: string, occasionId: string): Promise<OccasionDocument> {
