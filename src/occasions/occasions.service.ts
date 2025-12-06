@@ -73,7 +73,10 @@ export class OccasionsService {
       `[${this.findAll.name}] 기념일 목록 조회 - userId: ${userId}, category: ${category || 'all'}`,
     );
 
-    const query: any = { userId: new Types.ObjectId(userId) };
+    const query: any = {
+      userId: new Types.ObjectId(userId),
+      isArchived: false, // 아카이브되지 않은 것만
+    };
 
     if (category) {
       query.category = category;
@@ -166,9 +169,82 @@ export class OccasionsService {
     return updated;
   }
 
-  async remove(userId: string, occasionId: string): Promise<void> {
+  async archive(userId: string, occasionId: string): Promise<OccasionDocument> {
     this.logger.log(
-      `[${this.remove.name}] 기념일 삭제 시작 - userId: ${userId}, occasionId: ${occasionId}`,
+      `[${this.archive.name}] 기념일 아카이브 시작 - userId: ${userId}, occasionId: ${occasionId}`,
+    );
+
+    const occasion = await this.occasionModel.findById(occasionId).exec();
+
+    if (!occasion) {
+      throw new NotFoundException('Occasion not found');
+    }
+
+    if (occasion.userId.toString() !== userId) {
+      throw new ForbiddenException('You do not have permission to access this occasion');
+    }
+
+    // 알림 삭제
+    await this.notificationQueueService.deleteByOccasionId(occasionId);
+
+    occasion.isArchived = true;
+    occasion.archivedAt = new Date();
+    occasion.isPinned = false; // 아카이브 시 Pin 해제
+    occasion.pinnedAt = null;
+    const saved = await occasion.save();
+
+    this.logger.log(`[${this.archive.name}] 기념일 아카이브 완료 - occasionId: ${occasionId}`);
+    return saved;
+  }
+
+  async unarchive(userId: string, occasionId: string): Promise<OccasionDocument> {
+    this.logger.log(
+      `[${this.unarchive.name}] 기념일 복구 시작 - userId: ${userId}, occasionId: ${occasionId}`,
+    );
+
+    const occasion = await this.occasionModel.findById(occasionId).exec();
+
+    if (!occasion) {
+      throw new NotFoundException('Occasion not found');
+    }
+
+    if (occasion.userId.toString() !== userId) {
+      throw new ForbiddenException('You do not have permission to access this occasion');
+    }
+
+    occasion.isArchived = false;
+    occasion.archivedAt = null;
+    const saved = await occasion.save();
+
+    // 알림 재생성
+    if (saved.isNotificationEnabled) {
+      const user = await this.usersService.findById(userId);
+      await this.notificationQueueService.scheduleNotifications(saved, user);
+    }
+
+    this.logger.log(`[${this.unarchive.name}] 기념일 복구 완료 - occasionId: ${occasionId}`);
+    return saved;
+  }
+
+  async findArchived(userId: string): Promise<OccasionDocument[]> {
+    this.logger.debug(`[${this.findArchived.name}] 아카이브된 기념일 조회 - userId: ${userId}`);
+
+    const occasions = await this.occasionModel
+      .find({
+        userId: new Types.ObjectId(userId),
+        isArchived: true,
+      })
+      .sort({ archivedAt: -1 }) // 최근 아카이브한 순
+      .exec();
+
+    this.logger.debug(`[${this.findArchived.name}] 조회 완료 - 총 ${occasions.length}개`);
+
+    return occasions;
+  }
+
+  async hardDelete(userId: string, occasionId: string): Promise<void> {
+    this.logger.log(
+      `[${this.hardDelete.name}] 기념일 영구 삭제 시작 - userId: ${userId}, occasionId: ${occasionId}`,
     );
 
     const occasion = await this.occasionModel.findById(occasionId).exec();
@@ -186,7 +262,12 @@ export class OccasionsService {
 
     await occasion.deleteOne();
 
-    this.logger.log(`[${this.remove.name}] 기념일 삭제 완료 - occasionId: ${occasionId}`);
+    this.logger.log(`[${this.hardDelete.name}] 기념일 영구 삭제 완료 - occasionId: ${occasionId}`);
+  }
+
+  // 하위 호환성: remove는 archive로 변경
+  async remove(userId: string, occasionId: string): Promise<void> {
+    await this.archive(userId, occasionId);
   }
 
   async togglePin(userId: string, occasionId: string): Promise<OccasionDocument> {

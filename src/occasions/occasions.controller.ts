@@ -142,4 +142,28 @@ export class OccasionsController {
   async testNotification(@CurrentUser() user: CurrentUserData, @Param('id') id: string) {
     return this.occasionsService.sendTestNotification(user.userId, id);
   }
+
+  @Post(':id/archive')
+  async archive(@CurrentUser() user: CurrentUserData, @Param('id') id: string) {
+    const occasion = await this.occasionsService.archive(user.userId, id);
+    return this.toResponseDto(occasion);
+  }
+
+  @Post(':id/unarchive')
+  async unarchive(@CurrentUser() user: CurrentUserData, @Param('id') id: string) {
+    const occasion = await this.occasionsService.unarchive(user.userId, id);
+    return this.toResponseDto(occasion);
+  }
+
+  @Get('archived/list')
+  async findArchived(@CurrentUser() user: CurrentUserData) {
+    const occasions = await this.occasionsService.findArchived(user.userId);
+    return occasions.map((o) => this.toResponseDto(o));
+  }
+
+  @Delete(':id/hard-delete')
+  async hardDelete(@CurrentUser() user: CurrentUserData, @Param('id') id: string) {
+    await this.occasionsService.hardDelete(user.userId, id);
+    return { message: 'Occasion permanently deleted' };
+  }
 }
