@@ -27,12 +27,15 @@ export class OccasionsController {
   constructor(private readonly occasionsService: OccasionsService) {}
 
   private toResponseDto(occasion: any): OccasionResponseDto {
+    // aggregate() 결과는 plain object, find() 결과는 Mongoose document
+    const plainOccasion = typeof occasion.toJSON === 'function' ? occasion.toJSON() : occasion;
+
     return plainToInstance(
       OccasionResponseDto,
       {
-        ...occasion.toJSON(),
-        id: occasion._id.toString(),
-        userId: occasion.userId.toString(),
+        ...plainOccasion,
+        id: plainOccasion._id.toString(),
+        userId: plainOccasion.userId.toString(),
       },
       { excludeExtraneousValues: true },
     );
