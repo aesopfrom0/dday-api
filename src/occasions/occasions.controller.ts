@@ -27,15 +27,32 @@ export class OccasionsController {
   constructor(private readonly occasionsService: OccasionsService) {}
 
   private toResponseDto(occasion: any): OccasionResponseDto {
+    if (!occasion) {
+      throw new Error('Occasion is null or undefined');
+    }
+
     // aggregate() 결과는 plain object, find() 결과는 Mongoose document
     const plainOccasion = typeof occasion.toJSON === 'function' ? occasion.toJSON() : occasion;
+
+    // _id와 userId가 ObjectId 타입일 수도 있고 이미 string일 수도 있음
+    const id = plainOccasion._id
+      ? typeof plainOccasion._id === 'string'
+        ? plainOccasion._id
+        : plainOccasion._id.toString()
+      : plainOccasion.id;
+
+    const userId = plainOccasion.userId
+      ? typeof plainOccasion.userId === 'string'
+        ? plainOccasion.userId
+        : plainOccasion.userId.toString()
+      : undefined;
 
     return plainToInstance(
       OccasionResponseDto,
       {
         ...plainOccasion,
-        id: plainOccasion._id.toString(),
-        userId: plainOccasion.userId.toString(),
+        id,
+        userId,
       },
       { excludeExtraneousValues: true },
     );
