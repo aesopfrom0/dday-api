@@ -18,6 +18,9 @@ export class NotificationQueue {
   @Prop({ type: Types.ObjectId, ref: 'Occasion', required: true })
   occasionId: Types.ObjectId;
 
+  @Prop({ type: String, required: true })
+  milestoneId: string; // 마일스톤 존재 확인용
+
   @Prop({ required: true })
   scheduledFor: Date; // UTC 시간
 
@@ -30,12 +33,6 @@ export class NotificationQueue {
     default: 'pending',
   })
   status: 'pending' | 'sent' | 'failed';
-
-  @Prop({ required: true })
-  occasionName: string; // 캐시 (이벤트 이름)
-
-  @Prop({ required: true })
-  occasionDate: string; // 캐시 (YYYY-MM-DD)
 
   @Prop()
   sentAt?: Date;

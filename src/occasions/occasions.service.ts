@@ -59,12 +59,7 @@ export class OccasionsService {
     const saved = await occasion.save();
     this.logger.log(`[${this.create.name}] 기념일 생성 완료 - occasionId: ${saved.id}`);
 
-    // 알림 활성화 시 알림 큐 생성
-    if (saved.isNotificationEnabled) {
-      const user = await this.usersService.findById(userId);
-      await this.notificationQueueService.scheduleNotifications(saved, user);
-    }
-
+    // 알림은 매일 cron에서 자동으로 적재됨
     return saved;
   }
 
@@ -182,11 +177,7 @@ export class OccasionsService {
     const updated = await occasion.save();
 
     // 알림 활성화 시 재생성
-    if (updated.isNotificationEnabled) {
-      const user = await this.usersService.findById(userId);
-      await this.notificationQueueService.scheduleNotifications(updated, user);
-    }
-
+    // 알림은 매일 cron에서 자동으로 적재됨
     this.logger.log(`[${this.update.name}] 기념일 수정 완료 - occasionId: ${occasionId}`);
     return updated;
   }
@@ -238,12 +229,7 @@ export class OccasionsService {
     occasion.archivedAt = null;
     const saved = await occasion.save();
 
-    // 알림 재생성
-    if (saved.isNotificationEnabled) {
-      const user = await this.usersService.findById(userId);
-      await this.notificationQueueService.scheduleNotifications(saved, user);
-    }
-
+    // 알림은 매일 cron에서 자동으로 적재됨
     this.logger.log(`[${this.unarchive.name}] 기념일 복구 완료 - occasionId: ${occasionId}`);
     return saved;
   }
