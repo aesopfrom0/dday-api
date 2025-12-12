@@ -1,12 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { createHash } from 'crypto';
 import { User, UserDocument } from './schemas/user.schema';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
+import { OccasionsService } from '../occasions/occasions.service';
+import { DeletionLog, DeletionLogDocument } from './schemas/deletion-log.schema';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(DeletionLog.name) private deletionLogModel: Model<DeletionLogDocument>,
+    @Inject(forwardRef(() => OccasionsService))
+    private occasionsService: OccasionsService,
+  ) {}
 
   async findById(id: string): Promise<UserDocument> {
     const user = await this.userModel.findById(id).exec();
@@ -113,5 +121,31 @@ export class UsersService {
     // await this.notificationQueueService.rescheduleForUser(userId, timezone);
 
     return user;
+  }
+
+  /**
+   * 계정 삭제 (사용자와 관련된 모든 데이터 삭제)
+   *
+   * 프로세스:
+   * 1. 탈퇴 로그 생성 (이메일 해시, 재가입 방지용)
+   * 2. 사용자의 모든 occasions 삭제
+   * 3. 사용자 완전 삭제
+   */
+  async deleteAccount(userId: string): Promise<void> {
+    const user = await this.findById(userId);
+
+    // 1. 탈퇴 로그 생성 (이메일 SHA-256 해시)
+    const emailHash = createHash('sha256').update(user.email).digest('hex');
+    await this.deletionLogModel.create({
+      userId: userId,
+      emailHash: emailHash,
+      deletedAt: new Date(),
+    });
+
+    // 2. 사용자의 모든 occasions 삭제
+    await this.occasionsService.deleteAllByUserId(userId);
+
+    // 3. 사용자 완전 삭제
+    await this.userModel.findByIdAndDelete(userId);
   }
 }

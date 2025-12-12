@@ -38,4 +38,10 @@ export class UsersController {
   async updateTimezone(@CurrentUser() user: CurrentUserData, @Body() dto: UpdateTimezoneDto) {
     return this.usersService.updateTimezone(user.userId, dto.timezone);
   }
+
+  @Delete('me')
+  async deleteAccount(@CurrentUser() user: CurrentUserData) {
+    await this.usersService.deleteAccount(user.userId);
+    return { message: 'Account deleted successfully' };
+  }
 }

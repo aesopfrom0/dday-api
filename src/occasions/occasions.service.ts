@@ -781,4 +781,19 @@ export class OccasionsService {
       );
     }
   }
+
+  /**
+   * 사용자의 모든 occasions 삭제 (계정 탈퇴용)
+   */
+  async deleteAllByUserId(userId: string): Promise<void> {
+    this.logger.log(
+      `[${this.deleteAllByUserId.name}] 사용자의 모든 occasions 삭제 시작 - userId: ${userId}`,
+    );
+
+    const result = await this.occasionModel.deleteMany({ userId: new Types.ObjectId(userId) });
+
+    this.logger.log(
+      `[${this.deleteAllByUserId.name}] 삭제 완료 - deletedCount: ${result.deletedCount}`,
+    );
+  }
 }
