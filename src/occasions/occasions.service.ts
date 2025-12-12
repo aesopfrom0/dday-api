@@ -5,6 +5,8 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
@@ -21,6 +23,7 @@ export class OccasionsService {
 
   constructor(
     @InjectModel(Occasion.name) private occasionModel: Model<OccasionDocument>,
+    @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
     private configService: ConfigService,
     private notificationQueueService: NotificationQueueService,
