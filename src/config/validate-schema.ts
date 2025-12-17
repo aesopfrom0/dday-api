@@ -17,6 +17,7 @@ export function validateSchema() {
     GOOGLE_CLIENT_ID: Joi.string().required(),
     GOOGLE_CLIENT_SECRET: Joi.string().required(),
     GOOGLE_IOS_CLIENT_ID: Joi.string().required(),
+    GOOGLE_ANDROID_CLIENT_ID: Joi.string().required(),
     GOOGLE_CALLBACK_URL: Joi.string().required(),
     APPLE_CLIENT_ID: Joi.string().required(),
     FREE_MAX_PINNED_OCCASIONS: Joi.number().integer().min(0),

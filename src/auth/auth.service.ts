@@ -91,11 +91,15 @@ export class AuthService {
 
     try {
       // Google ID Token 검증
-      // audience: Web Client ID + iOS Client ID 모두 허용
+      // audience: Web Client ID + iOS Client ID + Android Client ID 모두 허용
       const audiences = [this.configService.get<string>('google.clientId')];
       const iosClientId = this.configService.get<string>('google.iosClientId');
+      const androidClientId = this.configService.get<string>('google.androidClientId');
       if (iosClientId) {
         audiences.push(iosClientId);
+      }
+      if (androidClientId) {
+        audiences.push(androidClientId);
       }
 
       const ticket = await this.googleClient.verifyIdToken({
