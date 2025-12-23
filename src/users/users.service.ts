@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  forwardRef,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { createHash } from 'crypto';
+import { DateTime } from 'luxon';
 import { User, UserDocument } from './schemas/user.schema';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
 import { OccasionsService } from '../occasions/occasions.service';
@@ -109,7 +116,11 @@ export class UsersService {
    * 타임존 업데이트
    */
   async updateTimezone(userId: string, timezone: string): Promise<UserDocument> {
-    // TODO: Luxon으로 타임존 유효성 검증
+    // Luxon으로 타임존 유효성 검증
+    if (!DateTime.local().setZone(timezone).isValid) {
+      throw new BadRequestException(`Invalid timezone: ${timezone}`);
+    }
+
     const user = await this.userModel.findByIdAndUpdate(userId, { timezone }, { new: true });
 
     if (!user) {

@@ -64,7 +64,7 @@ export class User {
     expiresAt?: Date;
   };
 
-  @Prop({ type: String, required: true, default: 'Asia/Seoul' })
+  @Prop({ type: String, required: true, default: 'UTC' })
   timezone: string; // IANA timezone (예: 'Asia/Seoul', 'America/New_York')
 
   @Prop({ type: [String], default: [] })
