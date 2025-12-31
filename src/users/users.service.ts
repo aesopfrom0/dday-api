@@ -4,21 +4,27 @@ import {
   Inject,
   forwardRef,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectModel, InjectConnection } from '@nestjs/mongoose';
+import { Model, Connection } from 'mongoose';
 import { createHash } from 'crypto';
 import { DateTime } from 'luxon';
 import { User, UserDocument } from './schemas/user.schema';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
 import { OccasionsService } from '../occasions/occasions.service';
 import { DeletionLog, DeletionLogDocument } from './schemas/deletion-log.schema';
+import { Occasion } from '../occasions/schemas/occasion.schema';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(DeletionLog.name) private deletionLogModel: Model<DeletionLogDocument>,
+    @InjectModel(Occasion.name) private occasionModel: Model<any>,
+    @InjectConnection() private readonly connection: Connection,
     @Inject(forwardRef(() => OccasionsService))
     private occasionsService: OccasionsService,
   ) {}
@@ -141,22 +147,54 @@ export class UsersService {
    * 1. 탈퇴 로그 생성 (이메일 해시, 재가입 방지용)
    * 2. 사용자의 모든 occasions 삭제
    * 3. 사용자 완전 삭제
+   *
+   * ⚠️ MongoDB 트랜잭션 적용: 중간 실패 시 모든 변경사항 롤백
    */
   async deleteAccount(userId: string): Promise<void> {
-    const user = await this.findById(userId);
+    this.logger.log(`[${this.deleteAccount.name}] 계정 삭제 시작 - userId: ${userId}`);
 
-    // 1. 탈퇴 로그 생성 (이메일 SHA-256 해시)
-    const emailHash = createHash('sha256').update(user.email).digest('hex');
-    await this.deletionLogModel.create({
-      userId: userId,
-      emailHash: emailHash,
-      deletedAt: new Date(),
-    });
+    const session = await this.connection.startSession();
 
-    // 2. 사용자의 모든 occasions 삭제
-    await this.occasionsService.deleteAllByUserId(userId);
+    try {
+      await session.withTransaction(async () => {
+        // 1. 사용자 조회 (트랜잭션 내에서)
+        const user = await this.userModel.findById(userId).session(session);
+        if (!user) {
+          throw new NotFoundException('User not found');
+        }
 
-    // 3. 사용자 완전 삭제
-    await this.userModel.findByIdAndDelete(userId);
+        // 2. 탈퇴 로그 생성 (이메일 SHA-256 해시)
+        const emailHash = createHash('sha256').update(user.email).digest('hex');
+        await this.deletionLogModel.create(
+          [
+            {
+              userId: userId,
+              emailHash: emailHash,
+              deletedAt: new Date(),
+            },
+          ],
+          { session },
+        );
+
+        // 3. 사용자의 모든 occasions 삭제
+        const deleteResult = await this.occasionModel.deleteMany({ userId }, { session });
+        this.logger.log(
+          `[${this.deleteAccount.name}] occasions 삭제 완료 - deletedCount: ${deleteResult.deletedCount}`,
+        );
+
+        // 4. 사용자 완전 삭제
+        await this.userModel.findByIdAndDelete(userId, { session });
+
+        this.logger.log(`[${this.deleteAccount.name}] 계정 삭제 완료 - userId: ${userId}`);
+      });
+    } catch (error) {
+      this.logger.error(
+        `[${this.deleteAccount.name}] 계정 삭제 실패 - userId: ${userId}, error: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    } finally {
+      await session.endSession();
+    }
   }
 }

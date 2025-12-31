@@ -1,4 +1,5 @@
 import { Module, OnModuleInit } from '@nestjs/common';
+import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -10,6 +11,8 @@ import { UsersModule } from './users/users.module';
 import { OccasionsModule } from './occasions/occasions.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { PerformanceLoggingInterceptor } from './common/interceptors/performance-logging.interceptor';
+import { GlobalExceptionFilter } from './common/filter/global-exception.filter';
 import * as admin from 'firebase-admin';
 
 @Module({
@@ -31,7 +34,19 @@ import * as admin from 'firebase-admin';
     NotificationsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // 전역 인터셉터: API 성능 측정
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: PerformanceLoggingInterceptor,
+    },
+    // 전역 예외 필터: 에러 코드 자동 생성
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
+    },
+  ],
 })
 export class AppModule implements OnModuleInit {
   onModuleInit() {
