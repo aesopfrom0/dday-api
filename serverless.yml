@@ -46,8 +46,8 @@ functions:
 
   notificationCron:
     handler: dist/cron-handler.handler
-    timeout: 300
-    memorySize: 512
+    timeout: 60
+    memorySize: 256
     events:
       - schedule:
           rate: cron(37 * * * ? *)
@@ -56,13 +56,23 @@ functions:
 
   updateNextMilestoneCacheCron:
     handler: dist/milestone-cache-cron-handler.handler
-    timeout: 300
-    memorySize: 512
+    timeout: 60
+    memorySize: 256
     events:
       - schedule:
           rate: cron(23 2 * * ? *)
           enabled: true
           description: "Update nextMilestoneDate cache daily at UTC 02:23"
+
+  enqueueNotificationsCron:
+    handler: dist/enqueue-notifications-cron-handler.handler
+    timeout: 60
+    memorySize: 256
+    events:
+      - schedule:
+          rate: cron(27 2 * * ? *)
+          enabled: true
+          description: "Enqueue upcoming milestone notifications daily at UTC 02:27"
 
 plugins:
   - serverless-offline
