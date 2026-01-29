@@ -87,7 +87,7 @@ export class AuthService {
    * ID Token을 검증하고 사용자를 생성/조회
    */
   async googleLogin(googleLoginDto: GoogleLoginDto): Promise<UserDocument> {
-    const { idToken } = googleLoginDto;
+    const { idToken, timezone } = googleLoginDto;
 
     try {
       // Google ID Token 검증
@@ -138,6 +138,7 @@ export class AuthService {
             profileImage,
             googleId,
             authProvider: 'google',
+            ...(timezone && { timezone }),
           });
         }
       }
@@ -158,7 +159,7 @@ export class AuthService {
   }
 
   async validateAppleUser(appleLoginDto: AppleLoginDto): Promise<UserDocument> {
-    const { identityToken, email, name } = appleLoginDto;
+    const { identityToken, email, name, timezone } = appleLoginDto;
 
     try {
       const appleIdTokenClaims = await appleSignin.verifyIdToken(identityToken, {
@@ -193,6 +194,7 @@ export class AuthService {
           name: name || 'Apple User',
           appleId,
           authProvider: 'apple',
+          ...(timezone && { timezone }),
         });
       }
 
@@ -212,7 +214,7 @@ export class AuthService {
   }
 
   async devLogin(devLoginDto: DevLoginDto): Promise<UserDocument> {
-    const { email, name } = devLoginDto;
+    const { email, name, timezone } = devLoginDto;
 
     let user = await this.usersService.findByEmail(email);
 
@@ -221,6 +223,7 @@ export class AuthService {
         email,
         name: name || 'Dev User',
         authProvider: 'dev',
+        ...(timezone && { timezone }),
       });
     }
 

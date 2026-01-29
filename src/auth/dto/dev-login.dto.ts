@@ -7,4 +7,8 @@ export class DevLoginDto {
   @IsString()
   @IsOptional()
   name?: string;
+
+  @IsString()
+  @IsOptional()
+  timezone?: string; // IANA timezone (예: 'Asia/Seoul', 'America/New_York')
 }
